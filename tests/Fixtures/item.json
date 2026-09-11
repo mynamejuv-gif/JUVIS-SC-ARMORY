@@ -1,0 +1,381 @@
+{
+  "uuid": "51bf9a6e-0ad7-49d2-8d41-d1d5e69669e6",
+  "slug": "5ca-akura",
+  "name": "5CA 'Akura'",
+  "class_name": "SHLD_BEHR_S03_5CA_SCItem",
+  "classification": "Ship.Shield",
+  "classification_label": "Shield",
+  "description": {
+    "en_EN": "Behring's belief in balanced shield design is evident with the 5CA. This large shield generator is equally focused on providing acceptable shield health along with decent damage absorption.",
+    "de_DE": "Hersteller: Behring\nTyp (En): Shield Generator\nTyp (De): Schildgenerator\n\nGröße: S3\nGütegrad: C\nKlasse: Civilian (Zivil)\n\nBehrings Glaube an ein ausgewogenes Schilddesign wird mit dem 5CA deutlich. Dieser große Schildgenerator ist gleichermaßen darauf ausgerichtet, eine akzeptable Schildhaltbarkeit zusammen mit einer guten Schadensabsorption zu bieten.",
+    "zh_CN": "物品类型：护盾生成器\n制造商：贝林财团 (Behring) \n尺寸：3\n等级：C\n分类：民用\n\n贝林对于平衡护盾各项能力的设计理念在5CA这款护盾生成器上得到了优秀的体现.这款大尺寸护盾生成器同时兼备了足够的护盾生命值和优秀的伤害吸收能力。",
+    "fr_FR": "Type d'article : Générateur de bouclier\nFabricant : Behring\nTaille : 3\nQualité : C\nClasse : Civil\n\nLa conviction de Behring en matière de conception de boucliers équilibrés est évidente avec le 5CA. Ce grand générateur de bouclier se concentre à la fois sur la fourniture d'une santé de bouclier acceptable et sur une absorption des dégâts décente."
+  },
+  "size": 3,
+  "mass": 1300,
+  "event_source": [],
+  "is_base_variant": true,
+  "is_craftable": true,
+  "is_lootable": false,
+  "blueprint": [
+    {
+      "uuid": "6f72bc54-ddc6-4a08-b68e-0b8506cd43a8",
+      "name": "5CA 'Akura'",
+      "link": "https://api.star-citizen.wiki/api/blueprints/6f72bc54-ddc6-4a08-b68e-0b8506cd43a8"
+    }
+  ],
+  "grade": "C",
+  "class": "Civilian",
+  "description_data": [
+    {
+      "name": "Class",
+      "value": "Civilian",
+      "type": "Civilian"
+    },
+    {
+      "name": "Grade",
+      "value": "C",
+      "type": "C"
+    },
+    {
+      "name": "Item Type",
+      "value": "Shield Generator",
+      "type": "Shield Generator"
+    },
+    {
+      "name": "Manufacturer",
+      "value": "Behring",
+      "type": "Behring"
+    },
+    {
+      "name": "Size",
+      "value": "3",
+      "type": "3"
+    }
+  ],
+  "manufacturer_description": "Behring",
+  "manufacturer": {
+    "name": "Behring Applied Technology",
+    "code": "BEHR",
+    "uuid": "65a5d887-3b21-4046-a718-6912c0c7c3be",
+    "link": "https://api.star-citizen.wiki/api/manufacturers/BEHR"
+  },
+  "type": "Shield",
+  "type_label": "Shield",
+  "type_web_url": "https://api.star-citizen.wiki/items?filter%5Btype%5D=Shield",
+  "sub_type": "UNDEFINED",
+  "sub_type_label": "Undefined",
+  "shield": {
+    "max_health": 100000,
+    "regen_rate": 19000,
+    "regen_time": 5.26,
+    "decay_ratio": 0.25,
+    "reserve_pool": {
+      "regen_rate": 47500,
+      "regen_time": 2.11,
+      "initial_health_ratio": 1,
+      "max_health_ratio": 1,
+      "regen_rate_ratio": 1,
+      "drain_rate_ratio": 2.5
+    },
+    "regen_delay": {
+      "downed": 12.1,
+      "damage": 6.05
+    },
+    "electrical_charge_damage_resistance": 0,
+    "absorption": {
+      "physical": {
+        "min": 0,
+        "max": 0.45
+      },
+      "energy": {
+        "min": 1,
+        "max": 1
+      },
+      "distortion": {
+        "min": 1,
+        "max": 1
+      },
+      "thermal": {
+        "min": 1,
+        "max": 1
+      },
+      "biochemical": {
+        "min": 1,
+        "max": 1
+      },
+      "stun": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "resistance": {
+      "physical": {
+        "min": 0,
+        "max": 0.25
+      },
+      "energy": {
+        "min": 0,
+        "max": 0
+      },
+      "distortion": {
+        "min": 0.75,
+        "max": 0.95
+      },
+      "thermal": {
+        "min": 0,
+        "max": 0
+      },
+      "biochemical": {
+        "min": 0,
+        "max": 0
+      },
+      "stun": {
+        "min": 0,
+        "max": 0
+      }
+    },
+    "max_shield_health": 100000,
+    "max_shield_regen": 19000
+  },
+  "dimension": {
+    "width": 0.75,
+    "height": 0.75,
+    "length": 0.75,
+    "volume": 0.756,
+    "volume_converted": 756000,
+    "volume_converted_unit": "µSCU",
+    "true_dimension": {
+      "width": 2.986,
+      "height": 1.017,
+      "length": 0.982
+    },
+    "dimensions": {
+      "width": 2.986,
+      "height": 1.017,
+      "length": 0.982
+    },
+    "cargo_dimension": {
+      "width": 0.67,
+      "height": 1.2,
+      "length": 4.42
+    },
+    "ui_dimension": {
+      "width": 0.75,
+      "height": 0.75,
+      "length": 0.75
+    }
+  },
+  "tags": [],
+  "required_tags": [],
+  "entity_tags": [],
+  "entity_tag_map": [],
+  "interactions": [],
+  "temperature": {
+    "unit": "C",
+    "cooling_threshold": 29.9,
+    "ir_threshold": 44.9,
+    "overheat_threshold": 99.9,
+    "overheat_temperature": 99.9,
+    "max_temperature": 109.9,
+    "recovery_temperature": 104.9
+  },
+  "durability": {
+    "health": 1100,
+    "lifetime": 0,
+    "max_lifetime": 0,
+    "repairable": true,
+    "salvageable": true,
+    "resistance": {
+      "stun": 1,
+      "energy": 0.9,
+      "thermal": 0.1,
+      "physical": 0.9,
+      "distortion": 1,
+      "biochemical": 1
+    }
+  },
+  "distortion": {
+    "decay_rate": 366.67,
+    "decay_delay": 4.5,
+    "max": 5500,
+    "maximum": 5500,
+    "overload_ratio": null,
+    "warning_ratio": 0.75,
+    "recovery_ratio": 0,
+    "recovery_time": null,
+    "power_ratio_at_max_distortion": 0,
+    "power_change_only_at_max_distortion": 0,
+    "shutdown_time": 19.5
+  },
+  "resource_network": {
+    "is_networked": true,
+    "is_relay": false,
+    "default_priority": 50,
+    "states": [
+      {
+        "name": "Online",
+        "signature": {
+          "em": 1800,
+          "ir": null
+        },
+        "deltas": [
+          {
+            "type": "Conversion",
+            "resource": "Power",
+            "rate": 4,
+            "minimum_fraction": 0.5,
+            "generated_resource": "Shield",
+            "generated_rate": 19000,
+            "discharge": null,
+            "no_over_generation": 0,
+            "binary_evaluation": null,
+            "composition": null
+          },
+          {
+            "type": "Consumption",
+            "resource": "Coolant",
+            "rate": 0,
+            "minimum_fraction": 0,
+            "generated_resource": null,
+            "generated_rate": null,
+            "discharge": null,
+            "no_over_generation": null,
+            "binary_evaluation": null,
+            "composition": null
+          }
+        ],
+        "power_ranges": [
+          {
+            "start": 1,
+            "modifier": 0.7,
+            "register_range": 1
+          },
+          {
+            "start": 3,
+            "modifier": 0.85,
+            "register_range": 1
+          },
+          {
+            "start": 4,
+            "modifier": 1,
+            "register_range": 1
+          }
+        ]
+      }
+    ],
+    "repair": {
+      "max_repair_count": 1,
+      "time_to_repair": 98,
+      "health_ratio": 0.2
+    },
+    "usage": {
+      "power": {
+        "min": 2,
+        "max": 4,
+        "minimum": 2,
+        "maximum": 4
+      },
+      "coolant": {
+        "min": 1.4,
+        "max": 4,
+        "minimum": 1.4,
+        "maximum": 4
+      }
+    },
+    "generation": {
+      "coolant": null,
+      "power": null
+    }
+  },
+  "emission": {
+    "ir": 0,
+    "em_min": 630,
+    "em_max": 1800,
+    "em_decay": 0.15
+  },
+  "shops": [],
+  "images": [
+    {
+      "source": "star-citizen.wiki",
+      "original_url": "https://cdn.star-citizen.wiki/images/0/0d/5CA_Akura.jpg",
+      "thumbnail_url": "https://cdn.star-citizen.wiki/images/0/0d/5CA_Akura.jpg",
+      "original_width": 386,
+      "original_height": 386,
+      "thumbnail_width": 386,
+      "thumbnail_height": 386
+    }
+  ],
+  "uex_prices": {
+    "purchase": [
+      {
+        "price_buy": 62210,
+        "price_sell": 0,
+        "price_rent": null,
+        "terminal_id": 131,
+        "terminal_code": "PBAL1",
+        "terminal_name": "Platinum Bay - ARC-L1",
+        "starmap_location": {
+          "uuid": "59485d8c-7947-4e00-871c-d35f6451aab8",
+          "name": "ARC-L1 Wide Forest Station",
+          "slug": "arc-l1-wide-forest-station",
+          "type_name": "Manmade_VisibleOnInteraction",
+          "parent_name": "Stanton",
+          "star_system_name": "Stanton",
+          "link": "https://api.star-citizen.wiki/api/locations/59485d8c-7947-4e00-871c-d35f6451aab8",
+          "web_url": "https://api.star-citizen.wiki/locations/59485d8c-7947-4e00-871c-d35f6451aab8"
+        },
+        "date_updated": "2026-09-09T15:59:48+04:00",
+        "game_version": "4.10.0-LIVE.12519617",
+        "uex_link": "https://uexcorp.space/items/info?name=5ca-'akura'&tab=about"
+      },
+      {
+        "price_buy": 60000,
+        "price_sell": 0,
+        "price_rent": null,
+        "terminal_id": 115,
+        "terminal_code": "DDGRI",
+        "terminal_name": "Dumper's Depot - GrimHEX",
+        "starmap_location": {
+          "uuid": "8cda0b9b-22a8-43fe-ac33-df7a1ba9434d",
+          "name": "Grim HEX",
+          "slug": "grim-hex",
+          "type_name": "Manmade",
+          "parent_name": "Yela",
+          "star_system_name": "Stanton",
+          "link": "https://api.star-citizen.wiki/api/locations/8cda0b9b-22a8-43fe-ac33-df7a1ba9434d",
+          "web_url": "https://api.star-citizen.wiki/locations/8cda0b9b-22a8-43fe-ac33-df7a1ba9434d"
+        },
+        "date_updated": "2026-09-03T20:15:06+04:00",
+        "game_version": "4.10.0-LIVE.12519617",
+        "uex_link": "https://uexcorp.space/items/info?name=5ca-'akura'&tab=about"
+      },
+      {
+        "price_buy": 62489,
+        "price_sell": 0,
+        "price_rent": null,
+        "terminal_id": 114,
+        "terminal_code": "DDA18",
+        "terminal_name": "Dumper's Depot - Area 18",
+        "starmap_location": {
+          "uuid": "c6535844-c615-494e-9dc1-c2d0c6e7190a",
+          "name": "Area18",
+          "slug": "area18",
+          "type_name": "LandingZone",
+          "parent_name": "ArcCorp",
+          "star_system_name": "Stanton",
+          "link": "https://api.star-citizen.wiki/api/locations/c6535844-c615-494e-9dc1-c2d0c6e7190a",
+          "web_url": "https://api.star-citizen.wiki/locations/c6535844-c615-494e-9dc1-c2d0c6e7190a"
+        },
+        "date_updated": "2026-08-29T19:49:54+04:00",
+        "game_version": "4.10.0-LIVE.12519617",
+        "uex_link": "https://uexcorp.space/items/info?name=5ca-'akura'&tab=about"
+      }
+    ]
+  },
+  "variants": [],
+  "web_url": "https://api.star-citizen.wiki/items/5ca-akura",
+  "link": "https://api.star-citizen.wiki/api/items/51bf9a6e-0ad7-49d2-8d41-d1d5e69669e6",
+  "updated_at": "2026-09-10T00:20:40Z",
+  "version": "4.10.0-LIVE.12519617"
+}
