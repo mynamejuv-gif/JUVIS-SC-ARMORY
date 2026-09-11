@@ -1,0 +1,29 @@
+name: Bug report
+description: Report an Android app problem or incorrect cached data.
+title: "[Bug]: "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: App and Android versions
+      placeholder: "JUVIS 0.1.2, Android 16, full-images APK"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the buttons tapped, search terms and relevant item or vehicle.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or error message
+      description: Include the displayed patch for data issues. Remove personal information, tokens and backup contents.
