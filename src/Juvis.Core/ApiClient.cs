@@ -78,13 +78,16 @@ public sealed class ApiClient(HttpClient http)
         var key = vehicle.Id.StartsWith("uex:") ? vehicle.Name : vehicle.Id;
         var root = await Get(Wiki + "vehicles/" + Uri.EscapeDataString(key) + "?include=ports,components", ct);
         var result = ApiParser.WikiVehicle(root.Get("data"));
+        if (string.IsNullOrWhiteSpace(result.Id)) throw new InvalidDataException("Wiki returned no vehicle identity.");
         if (result.Ports.Count == 0) throw new InvalidDataException("No ports returned. Retry or check the Wiki record.");
-        return result;
+        return result with { Id = vehicle.Id };
     }
     public async Task<Item> LoadItem(Item item, CancellationToken ct)
     {
         var key = item.Id.StartsWith("uex:") ? item.Name : item.Id;
-        return ApiParser.WikiItem((await Get(Wiki + "items/" + Uri.EscapeDataString(key), ct)).Get("data"));
+        var result = ApiParser.WikiItem((await Get(Wiki + "items/" + Uri.EscapeDataString(key), ct)).Get("data"));
+        if (string.IsNullOrWhiteSpace(result.Id)) throw new InvalidDataException("Wiki returned no item identity.");
+        return result with { Id = item.Id };
     }
     public async Task<Blueprint> LoadBlueprint(Blueprint b, CancellationToken ct) => ApiParser.WikiBlueprint((await Get(Wiki + "blueprints/" + Uri.EscapeDataString(b.Id), ct)).Get("data"));
     public static async Task<byte[]> ReadBounded(HttpContent content, int maxBytes, CancellationToken ct)

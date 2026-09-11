@@ -43,7 +43,9 @@ public static class ApiParser
         Manufacturer = e.S("company_name"), Size = Int(e.Get("size")), ImageUrl = e.S("screenshot"), WebUrl = e.S("wiki"), Version = e.S("game_version"), Source = "UEX" };
     public static Commodity UexCommodity(JsonElement e) => new(First(e.S("uuid"), "uex:commodity:" + e.S("id")), e.S("name"), e.S("code"),
         e.Get("price_buy").Number(), e.Get("price_sell").Number(), e.Get("is_illegal").Bool() == true, "uex:commodity:" + e.S("id"));
-    public static Blueprint WikiBlueprint(JsonElement e) => new(e.S("uuid"), e.S("output_name"), e.S("game_version"), e.Get("craft_time_seconds").Number() ?? 0,
+    public static Blueprint WikiBlueprint(JsonElement e) => new(e.S("uuid"),
+        new[] { e.S("output_name"), e.Get("output").S("name") }.FirstOrDefault(CatalogPresentation.HasName) ?? e.S("output_name"),
+        e.S("game_version"), e.Get("craft_time_seconds").Number() ?? 0,
         e.Get("is_available_by_default").Bool() == true,
         e.Get("ingredients").Array().Select(i => new Ingredient(First(i.S("resource_type_uuid"), i.S("item_uuid"), i.S("name")), i.S("name"),
             i.Get("quantity_scu").Number() ?? i.Get("quantity").Number() ?? 0, i.Get("quantity_scu").Number() is null ? "units" : "SCU")).ToList(),
