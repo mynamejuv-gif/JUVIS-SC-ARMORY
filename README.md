@@ -8,6 +8,8 @@ A native Android companion for Star Citizen, written in C# with .NET for Android
 
 This is a starter implementation of the described Windows workflows. The original Windows source was unavailable, so complete desktop feature parity has not been established.
 
+Private review: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tested coverage, fixes and remaining data gaps.
+
 ## Features
 
 - Searchable item catalog, item images and downloaded-image cache.
@@ -69,12 +71,12 @@ Follow [the upload guide](docs/GITHUB-SETUP.md). The included GitHub Actions wor
 | --- | --- |
 | `src/Juvis.Core` | Models, parsers, storage, synchronization and planning |
 | `src/Juvis.Android` | Native Android screens and resources |
-| `tests` | 35 executable core tests and fixtures |
+| `tests` | 40 executable core tests and fixtures |
 | `tools/Juvis.ImagePack` | Local image-pack importer |
 | `BundledData` | Empty default image index |
 | `docs` | Architecture, verification, device checklist and screenshots |
 
-The full-image edition was tested on an Android 16 emulator. Historical full-image verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that separate package. GitHub-hosted workflow execution remains to be verified after upload. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
+The full-image edition was tested on an Android 16 emulator. Historical full-image verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that separate package. The initial GitHub Actions build passed; later review changes require their own run. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
 
 This is an unofficial fan companion. Star Citizen content and images belong to their respective owners. Data sources include UEX and Star Citizen Wiki. No third-party image ownership or license is granted by this repository.
 

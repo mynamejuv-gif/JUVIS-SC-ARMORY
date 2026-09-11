@@ -1,5 +1,13 @@
 # Release history
 
+## 0.1.3 — private category review
+
+- Audited every populated item category, blueprints, commodities and vehicles against a fresh five-source sync.
+- Readable incomplete blueprint labels with an optional source-record filter.
+- Consistent component category labels and preserved save identities after Wiki detail refresh.
+- Prevented editing of vehicle variants with conflicting source IDs; existing saves remain exportable.
+- Forty passing core tests; debug APK and AAB builds. See [the audit report](docs/CATEGORY-AUDIT-0.1.3.md) for remaining data gaps.
+
 ## 0.1.2
 
 - New JUVIS star-and-laurel adaptive Android launcher icon.
