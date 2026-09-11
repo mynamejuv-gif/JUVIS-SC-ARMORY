@@ -49,7 +49,8 @@ public static class ApiParser
         e.Get("is_available_by_default").Bool() == true,
         e.Get("ingredients").Array().Select(i => new Ingredient(First(i.S("resource_type_uuid"), i.S("item_uuid"), i.S("name")), i.S("name"),
             i.Get("quantity_scu").Number() ?? i.Get("quantity").Number() ?? 0, i.Get("quantity_scu").Number() is null ? "units" : "SCU")).ToList(),
-        e.Get("unlocking_missions").Array().Select(m => m.S("title")).Where(s => s.Length > 0).Distinct().ToList(), e.S("web_url"));
+        e.Get("unlocking_missions").Array().Select(m => m.S("title")).Where(s => s.Length > 0).Distinct().ToList(), e.S("web_url"))
+        { Key = e.S("key"), MissionsChecked = e.Get("unlocking_missions").ValueKind == JsonValueKind.Array };
     public static Vehicle UexVehicle(JsonElement e) => new(First(e.S("uuid"), "uex:vehicle:" + e.S("id")), First(e.S("name_full"), e.S("name")),
         e.S("company_name"), e.Get("is_ground_vehicle").Bool() == true, e.S("url_photo"), e.S("game_version"), []);
     public static Vehicle WikiVehicle(JsonElement e)

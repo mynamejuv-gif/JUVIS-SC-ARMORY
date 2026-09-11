@@ -27,7 +27,11 @@ public record Item
 public record Commodity(string Id, string Name, string Code, decimal? Buy, decimal? Sell, bool Illegal, string ImageKey = "");
 public record Ingredient(string Id, string Name, decimal Quantity, string Unit);
 public record Blueprint(string Id, string Name, string Version, decimal Seconds, bool DefaultUnlocked,
-    List<Ingredient> Ingredients, List<string> Missions, string WebUrl);
+    List<Ingredient> Ingredients, List<string> Missions, string WebUrl)
+{
+    public string Key { get; init; } = "";
+    public bool MissionsChecked { get; init; }
+}
 public record PortType(string Type, string[] SubTypes);
 public record Port(string Id, string Name, bool? Editable, int? MinSize, int? MaxSize,
     List<PortType> Types, string[] RequiredTags, string[] Tags, Item? Installed, string Version);
@@ -48,6 +52,7 @@ public class UserState
 }
 public class Catalog
 {
+    public GuideSnapshot Guide { get; set; } = new("", []);
     public List<Item> Items { get; set; } = [];
     public List<Commodity> Commodities { get; set; } = [];
     public List<Blueprint> Blueprints { get; set; } = [];

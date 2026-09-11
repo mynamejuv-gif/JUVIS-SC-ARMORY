@@ -7,7 +7,21 @@ public sealed class ApiClient(HttpClient http)
     public const string Wiki = "https://api.star-citizen.wiki/api/";
     public const string Uex = "https://api.uexcorp.uk/2.0/";
     public string UexToken { private get; set; } = "";
-    public async Task<JsonElement> Get(string url, CancellationToken ct)
+    public Task<GuideSnapshot> LoadStarterGuide(CancellationToken ct) => Task.Run(async () =>
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        using var request = new HttpRequestMessage(HttpMethod.Get, StarterGuide.DataUrl);
+        request.Headers.UserAgent.ParseAdd("JuvisAndroid/0.1.5");
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Citizen Starter Guide: HTTP {(int)response.StatusCode}. Previous guide data retained.");
+        using var doc = JsonDocument.Parse(await ReadBounded(response.Content, 16 * 1024 * 1024, timeout.Token).ConfigureAwait(false));
+        return StarterGuide.Parse(doc.RootElement);
+    }, ct);
+    // Native Android transport may perform synchronous work while reading or disposing streams.
+    // Keep the entire response lifetime off the caller's UI thread, even for completed awaits.
+    public Task<JsonElement> Get(string url, CancellationToken ct) => Task.Run(() => GetCore(url, ct), ct);
+    async Task<JsonElement> GetCore(string url, CancellationToken ct)
     {
         var uri = new Uri(url);
         if (uri.Scheme != "https" || (uri.Host != "api.star-citizen.wiki" && uri.Host != "api.uexcorp.uk"))
@@ -18,9 +32,17 @@ public sealed class ApiClient(HttpClient http)
         request.Headers.UserAgent.ParseAdd("JuvisAndroid/0.1 (+https://api.star-citizen.wiki)");
         if (uri.Host == "api.uexcorp.uk" && !string.IsNullOrWhiteSpace(UexToken)) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", UexToken);
         request.Headers.Add("X-Client-Version", "0.1.0");
-        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
-        if (!response.IsSuccessStatusCode) throw new HttpRequestException($"{uri.Host}: HTTP {(int)response.StatusCode}. Retry later or check your UEX token.");
-        var bytes = await ReadBounded(response.Content, 32 * 1024 * 1024, timeout.Token);
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = uri.Host == "api.star-citizen.wiki" && response.StatusCode == System.Net.HttpStatusCode.NotFound
+                ? "No matching Wiki record is available for this entry. Your cached details and saved states have been retained."
+                : $"{uri.Host}: HTTP {(int)response.StatusCode}. " +
+                    (uri.Host == "api.uexcorp.uk" && response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden
+                        ? "Check your UEX token or access permissions." : "The source could not complete this request. Your cached data has been retained.");
+            throw new HttpRequestException(message, null, response.StatusCode);
+        }
+        var bytes = await ReadBounded(response.Content, 32 * 1024 * 1024, timeout.Token).ConfigureAwait(false);
         using var doc = JsonDocument.Parse(bytes);
         var status = doc.RootElement.S("status");
         if (status.Length > 0 && status != "ok") throw new InvalidDataException("UEX returned " + status + ". Previous cache retained.");
@@ -93,11 +115,11 @@ public sealed class ApiClient(HttpClient http)
     public static async Task<byte[]> ReadBounded(HttpContent content, int maxBytes, CancellationToken ct)
     {
         if (content.Headers.ContentLength > maxBytes) throw new InvalidDataException("Download exceeds size limit.");
-        await using var stream = await content.ReadAsStreamAsync(ct);
+        await using var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
         using var output = new MemoryStream();
         var buffer = new byte[16384];
         int n;
-        while ((n = await stream.ReadAsync(buffer, ct)) > 0)
+        while ((n = await stream.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
         {
             if (output.Length + n > maxBytes) throw new InvalidDataException("Download exceeds size limit.");
             output.Write(buffer, 0, n);

@@ -51,6 +51,10 @@ public sealed class Armory(LocalStore store, ApiClient api)
     {
         switch (source)
         {
+            case StarterGuide.Source:
+                var guide = await api.LoadStarterGuide(ct);
+                await Cache(c => c.Guide = guide, source);
+                break;
             case "UEX items":
                 var uex = await api.UexItems(progress, ct);
                 await Cache(c => {
@@ -71,7 +75,7 @@ public sealed class Armory(LocalStore store, ApiClient api)
             case "Blueprints":
                 var blueprints = await api.WikiPages("blueprints", ApiParser.WikiBlueprint, progress, ct);
                 if (blueprints.Count == 0) throw new InvalidDataException("No blueprints returned.");
-                await Cache(c => c.Blueprints = blueprints.Select(b => b with { Missions = c.Blueprints.FirstOrDefault(x => x.Id == b.Id)?.Missions ?? b.Missions }).ToList(), source);
+                await Cache(c => c.Blueprints = blueprints.Select(b => PreserveMissionDetails(b, c.Blueprints.FirstOrDefault(x => x.Id == b.Id))).ToList(), source);
                 break;
             case "Wiki components":
                 var items = await api.WikiPages("items?filter[category]=vehicle-components", ApiParser.WikiItem, progress, ct);
@@ -85,4 +89,8 @@ public sealed class Armory(LocalStore store, ApiClient api)
             default: throw new ArgumentException("Unknown sync module.");
         }
     }
+    public static Blueprint PreserveMissionDetails(Blueprint incoming, Blueprint? cached) =>
+        !incoming.MissionsChecked && cached is { MissionsChecked: true } && incoming.Version == cached.Version
+            ? incoming with { Missions = cached.Missions, MissionsChecked = true }
+            : incoming;
 }
