@@ -2,6 +2,18 @@ using System.Net;
 using System.Text.Json;
 using Juvis.Core;
 
+if (args.Length == 2 && args[0] == "--guide-live")
+{
+    using var client = new HttpClient();
+    var app = new Armory(new LocalStore(args[1]), new ApiClient(client));
+    await app.Initialize(() => Task.FromResult(new Catalog()));
+    await app.Sync(StarterGuide.Source, new Progress<string>(Console.WriteLine), default);
+    Console.WriteLine($"LIVE PASS {app.Catalog.Guide.Blueprints.Count} guide records, source build {app.Catalog.Guide.Version}");
+    foreach (var name in new[] { "A03 Sniper Rifle", "A03 \"Canuto\" Sniper Rifle" })
+        Console.WriteLine($"{name}: {StarterGuide.Match(app.Catalog.Guide, name)?.Missions.Count} mission reports");
+    return;
+}
+
 if (args.Length == 2 && args[0] == "--live")
 {
     using var client = new HttpClient();
@@ -154,10 +166,132 @@ Test("Wiki item refresh preserves the key used by gear states", () => Check(refr
 fake.Responses.Enqueue("""{"data":{"uuid":"wiki-vehicle-id","name":"Test vehicle","ports":[{"name":"shield"}]}}""");
 var refreshedVehicle = await api.LoadVehicle(new Vehicle("uex:vehicle:42", "Test vehicle", "", false, "", "", []), default);
 Test("Wiki vehicle refresh preserves ownership and proposed-build keys", () => Check(refreshedVehicle.Id == "uex:vehicle:42" && refreshedVehicle.Ports.Count == 1));
+Test("API request and streamed body never use the caller thread", () => {
+    using var handler = new ThreadGuardHandler(Environment.CurrentManagedThreadId, false);
+    using var client = new HttpClient(handler);
+    var result = new ApiClient(client).Get(ApiClient.Wiki + "items/test", default).GetAwaiter().GetResult();
+    Check(result.Get("data").S("name") == "Network test" && handler.Reads > 0);
+});
+Test("Image download and cache hit avoid caller-thread transport", () => {
+    var folder = Path.Combine(Path.GetTempPath(), "juvis-image-thread-" + Guid.NewGuid());
+    try {
+        using var handler = new ThreadGuardHandler(Environment.CurrentManagedThreadId, true);
+        using var client = new HttpClient(handler);
+        var cache = new ImageCache(folder, client);
+        var path = cache.Get("https://example.com/test.png", default).GetAwaiter().GetResult();
+        Check(path != null && File.Exists(path) && handler.Reads > 0);
+        Check(cache.Get("https://example.com/test.png", default).GetAwaiter().GetResult() == path && handler.Requests == 1);
+    } finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+});
+fake.StatusCode = HttpStatusCode.NotFound;
+fake.Responses.Enqueue("{}");
+try { await api.LoadItem(new Item { Id = "uex:item:2624", Name = "ADP Arms" }, default); throw new Exception("Expected missing Wiki record"); }
+catch (HttpRequestException ex) {
+    Test("Missing Wiki record explains retained data without suggesting a UEX token", () =>
+        Check(ex.StatusCode == HttpStatusCode.NotFound && ex.Message.Contains("No matching Wiki record") && !ex.Message.Contains("token")));
+}
+var guideJson = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "starter-guide.json"));
+using var guideDoc = JsonDocument.Parse(guideJson);
+var guideData = StarterGuide.Parse(guideDoc.RootElement);
+Test("Guide source parses faction, system and reputation separately from recipes", () => {
+    var baseItem = StarterGuide.Match(guideData, "A03 Sniper Rifle")!;
+    Check(baseItem.Missions.Count == 2 && baseItem.Missions[1].Faction == "Citizens For Prosperity" && baseItem.Missions[1].System == "Pyro" && baseItem.Missions[1].MinReputation == 800);
+});
+Test("Guide matching never substitutes base A03 for Canuto", () => {
+    Check(StarterGuide.Match(guideData, "A03 \"Canuto\" Sniper Rifle")!.Missions.Count == 0);
+    Check(StarterGuide.Match(guideData, "A03 Sniper Rifle", "unknown-key") == null);
+    Check(StarterGuide.Match(guideData, "Canuto") == null);
+    var exact = guideData.Blueprints.First();
+    Check(StarterGuide.Match(guideData, "Different display name", exact.Key) == exact);
+});
+Test("Ambiguous guide names require a blueprint identity", () => {
+    var a = new GuideBlueprint("a", "Same name", 1, []);
+    var b = a with { Key = "b" };
+    Check(StarterGuide.Match(new("test", [a,b]), "Same name") == null);
+    Check(StarterGuide.Match(new("test", [a,b]), "Same name", "b") == b);
+});
+Test("Incomplete guide responses are rejected", () => {
+    foreach (var json in new[] { "{}", "{\"_build\":\"test\",\"items\":[]}", "{\"_build\":\"test\",\"items\":[{\"blueprint\":\"a\",\"name\":\"A\"}]}" }) {
+        using var doc = JsonDocument.Parse(json); Reject(() => StarterGuide.Parse(doc.RootElement));
+    }
+});
+Test("Wiki distinguishes an unchecked list from a checked empty mission response", () => {
+    using var list = JsonDocument.Parse("{\"uuid\":\"b\",\"key\":\"key\"}");
+    using var detail = JsonDocument.Parse("{\"uuid\":\"b\",\"key\":\"key\",\"unlocking_missions\":[]}");
+    Check(!ApiParser.WikiBlueprint(list.RootElement).MissionsChecked && ApiParser.WikiBlueprint(detail.RootElement).MissionsChecked);
+    Check(ApiParser.WikiBlueprint(detail.RootElement).Key == "key");
+});
+Test("Mission refresh clears removed unlocks and does not carry them across patches", () => {
+    var old = new Blueprint("b", "B", "patch-1", 10, false, [], ["Old mission"], "") { MissionsChecked = true };
+    var list = old with { Missions = [], MissionsChecked = false };
+    Check(Armory.PreserveMissionDetails(list, old).Missions.Count == 1);
+    Check(Armory.PreserveMissionDetails(list with { Version = "patch-2" }, old).Missions.Count == 0);
+    Check(Armory.PreserveMissionDetails(list with { MissionsChecked = true }, old).Missions.Count == 0);
+});
+fake.StatusCode = HttpStatusCode.OK;
+fake.Responses.Enqueue(guideJson);
+await armory.Sync(StarterGuide.Source, new Progress<string>(), default);
+var savedGuideDate = armory.Catalog.Synced[StarterGuide.Source];
+Test("Guide sync persists offline and excludes the UEX token", () => {
+    Check(fake.Headers.Last() == null && fake.Urls.Last() == StarterGuide.DataUrl);
+    Check(store.Read<Catalog>("catalog.json").GetAwaiter().GetResult()!.Guide.Blueprints.Count == 2);
+});
+fake.Responses.Enqueue("{}");
+try { await armory.Sync(StarterGuide.Source, new Progress<string>(), default); throw new Exception("Invalid guide accepted"); }
+catch (InvalidDataException) {
+    Test("Failed guide sync preserves records, timestamp and user states", () =>
+        Check(armory.Catalog.Guide.Blueprints.Count == 2 && armory.Catalog.Synced[StarterGuide.Source] == savedGuideDate && armory.State.Gear["i"].Owned));
+}
+Test("Sync all continues after failures and runs every source once", () => {
+    var seen = new List<string>();
+    var report = SyncCoordinator.Run((source, progress, ct) => {
+        seen.Add(source);
+        if (source == "Commodities") throw new HttpRequestException("Offline");
+        if (source == "Vehicles") throw new TaskCanceledException("Timeout");
+        return Task.CompletedTask;
+    }, new Progress<string>(), default).GetAwaiter().GetResult();
+    Check(seen.SequenceEqual(SyncCoordinator.Sources) && report.Updated.Count == 4 && report.Failed.Count == 2 && !report.Cancelled);
+});
+Test("Sync all cancellation retains completed results and skips remaining sources", () => {
+    using var cancel = new CancellationTokenSource();
+    var seen = new List<string>();
+    var report = SyncCoordinator.Run((source, progress, ct) => {
+        seen.Add(source);
+        if (seen.Count == 2) { cancel.Cancel(); ct.ThrowIfCancellationRequested(); }
+        return Task.CompletedTask;
+    }, new Progress<string>(), cancel.Token).GetAwaiter().GetResult();
+    Check(report.Cancelled && report.Updated.Count == 1 && report.Failed.Count == 0 && seen.Count == 2);
+});
+Test("Sync all does not start when already cancelled", () => {
+    using var cancel = new CancellationTokenSource(); cancel.Cancel();
+    var report = SyncCoordinator.Run((source, progress, ct) => throw new Exception("Must not run"), new Progress<string>(), cancel.Token).GetAwaiter().GetResult();
+    Check(report.Cancelled && report.Updated.Count == 0 && report.Failed.Count == 0);
+});
+
 Console.WriteLine($"\n{passed} tests passed.");
+
+sealed class ThreadGuardHandler(int callerThread, bool image) : HttpMessageHandler
+{
+    public int Reads, Requests;
+    void Guard() { if (Environment.CurrentManagedThreadId == callerThread) throw new InvalidOperationException("Transport ran on the caller thread"); }
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Guard(); Requests++;
+        var stream = new GuardStream(System.Text.Encoding.UTF8.GetBytes("{\"data\":{\"name\":\"Network test\"}}"), () => { Guard(); Reads++; });
+        var content = new StreamContent(stream);
+        content.Headers.ContentType = new(image ? "image/png" : "application/json");
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+    }
+    sealed class GuardStream(byte[] bytes, Action guard) : MemoryStream(bytes)
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) { guard(); return base.ReadAsync(buffer, cancellationToken); }
+        protected override void Dispose(bool disposing) { if (disposing) guard(); base.Dispose(disposing); }
+    }
+}
 
 sealed class FakeHandler : HttpMessageHandler
 {
+    public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
     public Queue<string> Responses { get; } = new();
     public List<string?> Headers { get; } = [];
     public List<string> Urls { get; } = [];
@@ -165,6 +299,6 @@ sealed class FakeHandler : HttpMessageHandler
     {
         Headers.Add(request.Headers.Authorization?.ToString());
         Urls.Add(request.RequestUri!.OriginalString);
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(Responses.Dequeue()) });
+        return Task.FromResult(new HttpResponseMessage(StatusCode) { Content = new StringContent(Responses.Dequeue()) });
     }
 }
