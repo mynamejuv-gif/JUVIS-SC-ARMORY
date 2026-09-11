@@ -1,5 +1,23 @@
 # Release history
 
+## 0.1.6
+
+- Replace six More-page sync buttons with one Sync all sources action.
+- Add source progress, cancellation, retained cache on failure and a completion report.
+- Keep individual item and loadout refresh controls; update the user guide.
+
+## 0.1.5 — community source
+
+- Citizen Starter Guide sync, offline mission reports, source dates and website links.
+- Exact variant matching and clearer checked/unchecked Wiki mission status.
+- 51 tests passed; live source sync and Android offline viewing verified.
+
+## 0.1.4 — network refresh fix
+
+- Fixed network response reading/disposal on Android's UI thread for API requests and downloaded images.
+- Clarified missing Wiki records without misleading UEX-token advice.
+- Reproduced the ADP Arms failure and verified a successful FR-76 refresh; 43 core tests passed.
+
 ## 0.1.3 — private category review
 
 - Audited every populated item category, blueprints, commodities and vehicles against a fresh five-source sync.

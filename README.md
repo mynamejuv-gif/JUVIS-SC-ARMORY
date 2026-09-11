@@ -8,9 +8,14 @@ A native Android companion for Star Citizen, written in C# with .NET for Android
 
 This is a starter implementation of the described Windows workflows. The original Windows source was unavailable, so complete desktop feature parity has not been established.
 
+Latest private update: [0.1.6 Sync all sources](docs/RELEASE-0.1.6.md).
+
 Private review: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tested coverage, fixes and remaining data gaps.
 
 ## Features
+
+- One **Sync all sources** button in More, with progress, cancellation and per-source failure reporting.
+- Citizen Starter Guide mission reports, optional sync and offline viewing with separate source attribution.
 
 - Searchable item catalog, item images and downloaded-image cache.
 - Commodities, blueprints and crafting hub.
@@ -71,7 +76,7 @@ Follow [the upload guide](docs/GITHUB-SETUP.md). The included GitHub Actions wor
 | --- | --- |
 | `src/Juvis.Core` | Models, parsers, storage, synchronization and planning |
 | `src/Juvis.Android` | Native Android screens and resources |
-| `tests` | 40 executable core tests and fixtures |
+| `tests` | 54 executable core tests and fixtures |
 | `tools/Juvis.ImagePack` | Local image-pack importer |
 | `BundledData` | Empty default image index |
 | `docs` | Architecture, verification, device checklist and screenshots |
@@ -81,3 +86,13 @@ The full-image edition was tested on an Android 16 emulator. Historical full-ima
 This is an unofficial fan companion. Star Citizen content and images belong to their respective owners. Data sources include UEX and Star Citizen Wiki. No third-party image ownership or license is granted by this repository.
 
 
+
+## Thanks to our data sources
+
+Thank you to the maintainers and community contributors behind these resources:
+
+- [UEX](https://uexcorp.space/) — item, commodity and vehicle reference data.
+- [Star Citizen Wiki](https://starcitizen.tools/) and its [API](https://api.star-citizen.wiki/) — item details, components, blueprints, recipes and available unlock information.
+- [Citizen Starter Guide](https://citizen-starter-guide.com/) — community blueprint and mission reports through its [Blueprint Finder](https://citizen-starter-guide.com/star-citizen-blueprint-finder/).
+
+Your work makes JUVIS possible. Source names and update times remain visible so users can check the original information. JUVIS is an independent fan project; these credits do not imply endorsement or ownership of third-party data or images.
