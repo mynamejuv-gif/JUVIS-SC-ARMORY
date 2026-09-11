@@ -1,6 +1,6 @@
 # JUVIS SC ARMORY — Using the Android app
 
-For Android version 0.1.3. This guide explains everyday use after installation.
+For Android version 0.1.6. This guide explains everyday use after installation.
 
 ![JUVIS star-and-laurel app icon](screenshots/juvis-icon.png)
 
@@ -10,7 +10,7 @@ Screenshots show examples from Android testing. Saved items, prices and catalog 
 
 1. Open **JUVIS SC ARMORY** on your phone.
 2. Browse **Catalog** immediately using the included starter data.
-3. Connect to the internet and open **More** to sync additional data. Sync one source at a time and wait for the success message.
+3. Connect to the internet and open **More** to sync additional data. Tap **Sync all sources** and wait for the completion report.
 4. Open an item's **Details & gear states** and select **Owned**, **Need**, or **Favorite**.
 5. Open **My Gear** to see your saved equipment.
 
@@ -80,7 +80,7 @@ Cached catalog data, saved gear, recipes, craft plans and cached vehicle details
 3. Review the reported buy and sell prices per SCU and any illegal-commodity label.
 4. Tap **Ask Gemini** to research locations, legality and current prices.
 
-The displayed prices are community reference prices, not guaranteed live terminal quotes. Sync **Commodities** in **More** to refresh the cached list.
+The displayed prices are community reference prices, not guaranteed live terminal quotes. Tap **Sync all sources** in **More** to refresh the cached list.
 
 ## Blueprints and crafting
 
@@ -103,6 +103,19 @@ If a recipe has no quantities, refresh it before adding it. After importing a pl
 Unnamed or placeholder recipes are hidden from the main blueprint list. Enable **Show incomplete source records** to inspect them. Their short IDs distinguish them, and saved plans remain available. Availability is not confirmed for incomplete records.
 
 ![Incomplete recipes now have readable labels.](category-audit/blueprints-portrait.png)
+
+## Citizen Starter Guide: additional mission information
+
+1. Open **More → Sync all sources** while online. You can also tap **Refresh Citizen Starter Guide** on an item or blueprint page.
+2. Open an item or recipe and scroll to its **Citizen Starter Guide** card. It shows the source build and update date.
+3. Tap **View mission reports** to see reported factions, systems, reputation gates and legality. These records remain available offline after syncing.
+4. Tap **Open Citizen Starter Guide** to copy the exact item name, then **Open guide**. Paste the name into the website's Blueprint Finder.
+
+![Citizen Starter Guide mission reports displayed offline in JUVIS.](community-sources/missions-offline.png)
+
+Wiki and community reports are shown separately. A missing match does not mean an item is unobtainable. A named finish such as A03 "Canuto" is not automatically given the standard A03's missions. If a source has no missions, JUVIS says so; it does not invent a drop location. Check the displayed source build against your game patch. A listed mission does not guarantee a specific blueprint drop.
+
+Craft-plan quantities continue to use Wiki recipes. Source downloads are cached information and are excluded from your personal backup, just like the other catalogs.
 
 ## Vehicle loadouts and upgrades
 
@@ -143,17 +156,22 @@ If a vehicle shows **Source identity conflict**, ownership and build editing are
 
 ## Sync data
 
-Open **More**, then choose the source you need:
+![All six sources updated from More](sync-all/completed.png)
 
-| Sync button | Updates |
+Open **More → Sync all sources**. One tap updates all six sources in sequence:
+
+| Source | Updates |
 | --- | --- |
-| **Sync UEX items** | Equipment catalog from UEX. |
-| **Sync Commodities** | Commodity reference data. |
-| **Sync Blueprints** | Blueprint and recipe catalog. |
-| **Sync Vehicles** | Vehicle list; refresh individual stock loadouts separately. |
-| **Sync Wiki components** | Component information from Star Citizen Wiki. |
+| **UEX items** | Equipment catalog from UEX. |
+| **Commodities** | Commodity reference data. |
+| **Blueprints** | Blueprint and recipe catalog. |
+| **Vehicles** | Vehicle list; refresh individual stock loadouts separately. |
+| **Wiki components** | Component information from Star Citizen Wiki. |
+| **Citizen Starter Guide** | Additional blueprint mission reports for offline viewing. |
 
-Watch the status message and wait for completion before starting another sync. **Cancel active sync** stops the current operation. Failed or cancelled syncs retain the previous cache. Each source shows its last successful sync time.
+Watch the source counter and progress message. The completion report lists any failures; other sources continue updating if one fails. **Cancel active sync** stops the remaining work. Completed updates stay saved, and failed sources keep their previous cache. Each source shows its last successful sync time. Tap **Sync all sources** again to retry.
+
+Images download when viewed. Individual Wiki item details, recipe unlocks and stock vehicle loadouts still refresh on their own pages; the global sync does not download every detail record or image.
 
 The optional UEX bearer-token field is for users who have a token. Enter it and tap **Use token for this session** when needed. It is kept for the current session and excluded from backups.
 
@@ -180,7 +198,7 @@ Import merges data. Imported values win when the same record exists in both plac
 
 | Problem | Try this |
 | --- | --- |
-| No search results | Clear the search, reset the filter, then sync the relevant source in More. |
+| No search results | Clear the search, reset the filter, then use **Sync all sources** in More. |
 | No image | Use the full-image edition for bundled pictures, or connect and refresh item details. Some entries have no image. |
 | No vehicle ports | Open the vehicle and tap Refresh stock loadout / retry. |
 | No upgrade candidates | Sync candidates for the selected editable port. |
