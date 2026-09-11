@@ -126,6 +126,34 @@ Test("Commodity image key survives UUID-backed records", () => {
     using var d = JsonDocument.Parse("""{"id":1,"uuid":"some-game-uuid","name":"Agricium"}""");
     var c = ApiParser.UexCommodity(d.RootElement); Check(c.Id == "some-game-uuid" && c.ImageKey == "uex:commodity:1");
 });
+Test("Blueprint nested output supplies a missing or placeholder name", () => {
+    foreach (var name in new[] { "", "<= PLACEHOLDER =>" }) {
+        using var d = JsonDocument.Parse(JsonSerializer.Serialize(new { uuid = "recipe-id", output_name = name, output = new { name = "Omnisky III Cannon" } }));
+        Check(ApiParser.WikiBlueprint(d.RootElement).Name == "Omnisky III Cannon");
+    }
+});
+Test("Legacy incomplete blueprints remain identifiable without changing saved IDs", () => {
+    foreach (var name in new[] { "", " \t", "<= PLACEHOLDER =>" }) {
+        var b = new Blueprint("recipe-id", name, "", 10, false, [], [], "");
+        Check(!CatalogPresentation.HasName(b.Name));
+        Check(CatalogPresentation.BlueprintName(b) == "Incomplete blueprint · recipe-i");
+        Check(b.Id == "recipe-id" && b.Name == name);
+    }
+    Check(CatalogPresentation.HasName("Placeholder Rifle") && CatalogPresentation.HasName("Omnisky III Cannon"));
+});
+Test("Category aliases unite component categories without changing source records", () => {
+    Check(CatalogPresentation.Category("Cooler") == CatalogPresentation.Category("Coolers"));
+    Check(CatalogPresentation.Category("Power") == "Power Plants");
+    Check(CatalogPresentation.Category("Quantum Drive") == "Quantum Drives");
+    Check(CatalogPresentation.Category("Shield") == "Shield Generators");
+    Check(CatalogPresentation.Category("Personal Weapons") == "Personal Weapons");
+});
+fake.Responses.Enqueue("""{"data":{"uuid":"wiki-item-id","name":"Test item"}}""");
+var refreshedItem = await api.LoadItem(new Item { Id = "uex:item:42", Name = "Test item" }, default);
+Test("Wiki item refresh preserves the key used by gear states", () => Check(refreshedItem.Id == "uex:item:42"));
+fake.Responses.Enqueue("""{"data":{"uuid":"wiki-vehicle-id","name":"Test vehicle","ports":[{"name":"shield"}]}}""");
+var refreshedVehicle = await api.LoadVehicle(new Vehicle("uex:vehicle:42", "Test vehicle", "", false, "", "", []), default);
+Test("Wiki vehicle refresh preserves ownership and proposed-build keys", () => Check(refreshedVehicle.Id == "uex:vehicle:42" && refreshedVehicle.Ports.Count == 1));
 Console.WriteLine($"\n{passed} tests passed.");
 
 sealed class FakeHandler : HttpMessageHandler
