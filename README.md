@@ -8,9 +8,9 @@ A native Android companion for Star Citizen, written in C# with .NET for Android
 
 This is a starter implementation of the described Windows workflows. The original Windows source was unavailable, so complete desktop feature parity has not been established.
 
-Latest private update: [0.1.6 Sync all sources](docs/RELEASE-0.1.6.md).
+Public prerelease: [Download v0.1.6](https://github.com/mynamejuv-gif/JUVIS-SC-ARMORY/releases/tag/v0.1.6) — includes Sync all sources and community blueprint reports.
 
-Private review: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tested coverage, fixes and remaining data gaps.
+Validation: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tested coverage, fixes and remaining data gaps.
 
 ## Features
 
@@ -81,7 +81,7 @@ Follow [the upload guide](docs/GITHUB-SETUP.md). The included GitHub Actions wor
 | `BundledData` | Empty default image index |
 | `docs` | Architecture, verification, device checklist and screenshots |
 
-The full-image edition was tested on an Android 16 emulator. Historical full-image verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that separate package. The initial GitHub Actions build passed; later review changes require their own run. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
+The full-image edition was tested on an Android 16 emulator. Historical full-image verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that separate package. The v0.1.6 GitHub Actions build passed with 54 core tests. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
 
 This is an unofficial fan companion. Star Citizen content and images belong to their respective owners. Data sources include UEX and Star Citizen Wiki. No third-party image ownership or license is granted by this repository.
 
@@ -96,3 +96,8 @@ Thank you to the maintainers and community contributors behind these resources:
 - [Citizen Starter Guide](https://citizen-starter-guide.com/) — community blueprint and mission reports through its [Blueprint Finder](https://citizen-starter-guide.com/star-citizen-blueprint-finder/).
 
 Your work makes JUVIS possible. Source names and update times remain visible so users can check the original information. JUVIS is an independent fan project; these credits do not imply endorsement or ownership of third-party data or images.
+
+## Feedback
+
+Suggestions and bug reports are welcome through [GitHub issues](https://github.com/mynamejuv-gif/JUVIS-SC-ARMORY/issues) or mynamejuv@gmail.com. Include your device, Android version, app version and a screenshot when reporting a problem.
+
