@@ -23,6 +23,12 @@ public partial class MainActivity
     {
         Detail(v.Name, $"{(v.Ground ? "Ground vehicle" : "Ship")} / {v.Manufacturer}\nLoadout patch: {ApiParser.First(v.Ports.FirstOrDefault()?.Version ?? "", v.Version, "unknown")}", Draw);
         var generation = screenGeneration;
+        if (armory.Catalog.Vehicles.Count(other => other.Id == v.Id) > 1)
+        {
+            body.AddView(Label("Source identity conflict: multiple vehicle variants share this ID. Ownership and build editing are paused for these variants to prevent changes applying to the wrong vehicle. Existing saves are retained in your backup.", 15, cyan));
+            body.AddView(Button("Export existing saves", () => { ExportBackup(); return Task.CompletedTask; }));
+            return;
+        }
         body.AddView(Button(armory.State.Vehicles.Contains(v.Id) ? "✓ Owned vehicle · tap to unmark" : "Mark vehicle owned", async () => {
             await armory.Change(s => { if (!s.Vehicles.Add(v.Id)) s.Vehicles.Remove(v.Id); }); VehicleScreen(v, proposed);
         }));

@@ -35,7 +35,7 @@ public partial class MainActivity
         body.AddView(Label($"{bundledImages.Count:N0} bundled images · always available offline", 16));
         body.AddView(Label($"Downloaded image cache · {images.Bytes / 1048576.0:0.0} MB / 100 MB", 16));
         body.AddView(Button("Clear downloaded images", async () => { await images.Clear(); Draw(); }));
-        body.AddView(Label("JUVIS Android 0.1.1 · Native C#\nCommunity data: UEX and Star Citizen Wiki. Unofficial fan companion; not affiliated with Cloud Imperium Games.\nDesktop backup migration awaits the Windows source/schema.", 12, muted));
+        body.AddView(Label("JUVIS Android 0.1.3 · Native C#\nCommunity data: UEX and Star Citizen Wiki. Unofficial fan companion; not affiliated with Cloud Imperium Games.\nDesktop backup migration awaits the Windows source/schema.", 12, muted));
         body.AddView(Button("UEX data source", () => { OpenUrl("https://uexcorp.space/"); return Task.CompletedTask; }));
         body.AddView(Button("Star Citizen Wiki data source", () => { OpenUrl("https://api.star-citizen.wiki/"); return Task.CompletedTask; }));
     }

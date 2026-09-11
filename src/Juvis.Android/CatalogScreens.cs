@@ -25,11 +25,11 @@ public partial class MainActivity
                 all = all.Concat(armory.State.Gear.Where(x => !known.Contains(x.Key)).Select(x => new Item { Id = x.Key, Name = x.Value.Name.Length > 0 ? x.Value.Name : x.Key, Category = "Awaiting catalog sync" }));
                 all = all.Where(i => armory.State.Gear.TryGetValue(i.Id, out var s) && (gearFilter switch { "Owned" => s.Owned, "Need" => s.Need, "Favorites" => s.Favorite, _ => s.Owned || s.Need || s.Favorite }));
             }
-            else if (category != "All categories") all = all.Where(i => i.Category == category);
-            var filtered = all.Where(i => Matches(query, i.Name, i.Category, i.Manufacturer)).OrderBy(i => i.Name).ToList();
+            else if (category != "All categories") all = all.Where(i => CatalogPresentation.Category(i.Category) == category);
+            var filtered = all.Where(i => Matches(query, i.Name, i.Category, CatalogPresentation.Category(i.Category), i.Manufacturer)).OrderBy(i => i.Name).ToList();
             Pager(results, filtered, i => {
                 var card = Card();
-                card.AddView(Label(i.Category.ToUpperInvariant(), 10, cyan));
+                card.AddView(Label(CatalogPresentation.Category(i.Category).ToUpperInvariant(), 10, cyan));
                 card.AddView(Label(i.Name, 19));
                 card.AddView(Label(ApiParser.First(i.Manufacturer, "Manufacturer unavailable") + (i.Size != null ? $" · S{i.Size}" : ""), 12, muted));
                 if (armory.State.Gear.TryGetValue(i.Id, out var s)) card.AddView(Label(string.Join("  ·  ", new[] { s.Owned ? "✓ Owned" : "", s.Need ? "+ Need" : "", s.Favorite ? "★ Favorite" : "" }.Where(x => x.Length > 0)), 12, cyan));
@@ -39,7 +39,7 @@ public partial class MainActivity
         }
         Search("Search names, categories, manufacturers", _ => Render());
         if (gear) Choice(body, ["All saved", "Owned", "Need", "Favorites"], gearFilter, c => { gearFilter = c; page = 0; Render(); });
-        else Choice(body, new[] { "All categories" }.Concat(armory.Catalog.Items.Select(i => i.Category).Distinct().Order()).ToArray(), category, c => { category = c; page = 0; Render(); });
+        else Choice(body, new[] { "All categories" }.Concat(armory.Catalog.Items.Select(i => CatalogPresentation.Category(i.Category)).Distinct().Order()).ToArray(), category, c => { category = c; page = 0; Render(); });
         body.AddView(results); Render();
     }
     void ItemScreen(Item i, Action returnTo)
