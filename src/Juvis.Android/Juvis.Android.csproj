@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <ApplicationId>app.juvis.scarmory</ApplicationId>
+    <ApplicationVersion>3</ApplicationVersion>
+    <ApplicationDisplayVersion>0.1.2</ApplicationDisplayVersion>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <PublishTrimmed>false</PublishTrimmed>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <ImagePackDirectory Condition="'$(ImagePackDirectory)' == ''">$(MSBuildThisFileDirectory)../../BundledData</ImagePackDirectory>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Juvis.Core/Juvis.Core.csproj" /></ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="$(ImagePackDirectory)/Images/**/*.*" Link="bundled-images/%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="$(ImagePackDirectory)/image-index.json" Link="bundled-images/image-index.json" />
+  </ItemGroup>
+</Project>
+
