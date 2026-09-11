@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "name": "A03 Sniper Rifle",
+      "type": "weapon",
+      "subtype": "sniper",
+      "craftable": true,
+      "blueprint": "BP_CRAFT_gmni_sniper_ballistic_01",
+      "craftTime": 180,
+      "materials": [
+        {
+          "resource": "Taranite",
+          "quantity": 0.06,
+          "minQuality": 0
+        },
+        {
+          "resource": "Hephaestanite",
+          "quantity": 0.02,
+          "minQuality": 0
+        },
+        {
+          "resource": "Iron",
+          "quantity": 0.03,
+          "minQuality": 0
+        },
+        {
+          "resource": "Hadanite",
+          "quantity": 1.0,
+          "minQuality": 0
+        }
+      ],
+      "missions": [
+        {
+          "type": "career",
+          "title": "Take Headhunter Stronghold Offline",
+          "lawful": true,
+          "faction": "Citizens For Prosperity",
+          "system": "Unknown",
+          "systems": [
+            "Unknown"
+          ],
+          "minRep": 800,
+          "repReward": 125,
+          "repStanding": "Jr. Contractor",
+          "scopeGuid": "d31bd373-35ab-4ea4-b0a7-0ccc867ef082",
+          "event": null
+        },
+        {
+          "type": "career",
+          "title": "Destroy Headhunter Stolen Data",
+          "lawful": true,
+          "faction": "Citizens For Prosperity",
+          "system": "Pyro",
+          "systems": [
+            "Pyro"
+          ],
+          "minRep": 800,
+          "repReward": 125,
+          "repStanding": "Jr. Contractor",
+          "scopeGuid": "d31bd373-35ab-4ea4-b0a7-0ccc867ef082",
+          "event": null
+        }
+      ],
+      "craftKind": "weapon"
+    },
+    {
+      "name": "A03 \"Canuto\" Sniper Rifle",
+      "type": "weapon",
+      "subtype": "sniper",
+      "craftable": true,
+      "blueprint": "BP_CRAFT_gmni_sniper_ballistic_01_arctic01",
+      "craftTime": 180,
+      "materials": [
+        {
+          "resource": "Taranite",
+          "quantity": 0.06,
+          "minQuality": 0
+        },
+        {
+          "resource": "Hephaestanite",
+          "quantity": 0.02,
+          "minQuality": 0
+        },
+        {
+          "resource": "Iron",
+          "quantity": 0.03,
+          "minQuality": 0
+        },
+        {
+          "resource": "Hadanite",
+          "quantity": 1.0,
+          "minQuality": 0
+        }
+      ],
+      "missions": [],
+      "craftKind": "weapon"
+    }
+  ],
+  "_build": "4.10.191.2241"
+}
