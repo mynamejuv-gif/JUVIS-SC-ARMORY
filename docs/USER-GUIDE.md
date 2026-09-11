@@ -1,6 +1,6 @@
 # JUVIS SC ARMORY — Using the Android app
 
-For Android version 0.1.2. This guide explains everyday use after installation.
+For Android version 0.1.3. This guide explains everyday use after installation.
 
 ![JUVIS star-and-laurel app icon](screenshots/juvis-icon.png)
 
@@ -100,6 +100,10 @@ Use **+ One more** to increase a recipe quantity. **− One / remove** decreases
 
 If a recipe has no quantities, refresh it before adding it. After importing a plan, sync Blueprints if a recipe is not cached. Totals use the cached base recipe; check the source for station, quality and tier requirements. Adding a plan does not craft anything in the game.
 
+Unnamed or placeholder recipes are hidden from the main blueprint list. Enable **Show incomplete source records** to inspect them. Their short IDs distinguish them, and saved plans remain available. Availability is not confirmed for incomplete records.
+
+![Incomplete recipes now have readable labels.](category-audit/blueprints-portrait.png)
+
 ## Vehicle loadouts and upgrades
 
 ![Proposed build: review the replacement, its fit result, component details and removal button.](screenshots/vehicle-build.png)
@@ -134,6 +138,8 @@ Gemini buttons prepare a research prompt for the item, commodity, recipe or vehi
 6. Return to JUVIS to review candidates and save changes yourself.
 
 The prompt contains the selected context, including the stock loadout and proposed build for a vehicle. It does not include your full backup. Replies appear in Gemini and are not automatically applied to JUVIS. Check sources and current-patch compatibility before acting on a suggestion.
+
+If a vehicle shows **Source identity conflict**, ownership and build editing are paused because multiple variants share one source ID. Export existing saves and keep them for review.
 
 ## Sync data
 
