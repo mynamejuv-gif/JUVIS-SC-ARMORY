@@ -63,6 +63,7 @@ public partial class MainActivity
         card.AddView(Label("Reported buy price: " + Price(i.BuyPrice), 15, cyan));
         foreach (var shop in i.Shops) card.AddView(Label(shop, 12, muted));
         body.AddView(card);
+        AddCommunitySource(i.Name, "", () => ItemScreen(i, returnTo));
         var state = armory.State.Gear.GetValueOrDefault(i.Id) ?? new();
         foreach (var flag in new[] { "Owned", "Need", "Favorite" })
         {

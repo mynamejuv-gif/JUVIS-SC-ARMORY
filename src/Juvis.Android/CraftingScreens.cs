@@ -36,15 +36,16 @@ public partial class MainActivity
         body.AddView(Button(armory.State.Blueprints.Contains(b.Id) ? "✓ Owned blueprint · tap to unmark" : "Mark blueprint owned", async () => {
             await armory.Change(s => { if (!s.Blueprints.Add(b.Id)) s.Blueprints.Remove(b.Id); }); BlueprintScreen(b, returnTo);
         }));
-        body.AddView(Label("Mission unlocks", 19));
-        body.AddView(Label(b.DefaultUnlocked ? "Available by default" : b.Missions.Count > 0 ? string.Join("\n", b.Missions) : "Mission details not cached. Refresh the recipe to load unlocks.", 14, muted));
+        body.AddView(Label("Mission unlocks · Star Citizen Wiki", 19));
+        body.AddView(Label(b.DefaultUnlocked ? "Available by default" : b.Missions.Count > 0 ? string.Join("\n", b.Missions) : b.MissionsChecked ? "Source checked: no unlock missions listed for this patch. Availability remains unconfirmed." : "Mission details not checked yet. Refresh the recipe to check the Wiki source.", 14, muted));
         body.AddView(Button("Refresh recipe & mission unlocks", async () => { var next = await armory.Api.LoadBlueprint(b, lifetime.Token); await armory.RememberBlueprint(next); if (generation == screenGeneration) BlueprintScreen(next, returnTo); }));
+        AddCommunitySource(b.Name, b.Key, () => BlueprintScreen(b, returnTo));
         body.AddView(Button("+ Add one to craft plan", async () => {
             if (b.Ingredients.Count == 0) throw new InvalidOperationException("Recipe quantities are unavailable.");
             await armory.Change(s => s.CraftPlan[b.Id] = Math.Min(999, s.CraftPlan.GetValueOrDefault(b.Id) + 1));
             Toast.MakeText(this, "Added to craft plan", ToastLength.Short)!.Show();
         }, true));
-        body.AddView(Button("✦ Ask Gemini about crafting", () => AskGemini($"Research crafting {b.Name} in Star Citizen. Cached recipe patch: {b.Version}. Verify live availability, mission unlocks, crafting station requirements and quality/tier effects. Cite sources. Ingredients: " + string.Join(", ", b.Ingredients.Select(i => $"{i.Name} {i.Quantity} {i.Unit}")))));
+        body.AddView(Button("✦ Ask Gemini about crafting", () => AskGemini($"Research crafting {b.Name} in Star Citizen. Cached recipe patch: {b.Version}. Use this exact named variant; never substitute the base model or a different finish. Verify live availability, mission unlocks, crafting station requirements and quality/tier effects. Compare Citizen Starter Guide and Star Citizen Wiki for the stated patch. State missing or conflicting evidence explicitly and cite sources. Ingredients: " + string.Join(", ", b.Ingredients.Select(i => $"{i.Name} {i.Quantity} {i.Unit}")))));
         if (b.WebUrl.Length > 0) body.AddView(Button("Open full recipe / tiers", () => { OpenUrl(b.WebUrl); return Task.CompletedTask; }));
     }
     void CraftScreen()
