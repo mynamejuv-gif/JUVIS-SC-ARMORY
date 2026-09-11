@@ -1,0 +1,19 @@
+# Architecture and extension points
+
+The native activity uses one scrollable content area and five persistent navigation destinations. Catalog lists render 30 records at a time so syncing a large dataset does not create thousands of native views. Search runs against the local cache; detail requests and explicit syncs use the network. Layouts use density-independent sizes, flexible width and readable native text.
+
+`Juvis.Core` has no Android dependency. Records normalize the two external APIs around UUIDs; UEX records without UUIDs have namespaced IDs. UEX's numeric route identifiers can change upstream, so records with game UUIDs are preferred. Wiki component records take precedence over UEX catalog entries sharing the same UUID because their port restrictions are richer.
+
+`Armory` commits catalog and user-state snapshots separately. Semaphore guards serialize each class of writes; a temporary file is flushed and atomically renamed before in-memory state is replaced. A failed parse, network error or cancelled sync leaves the previous completed snapshot in place. Corrupt local files surface an error rather than silently resetting user data. Manual backup export is the uninstall/reinstall recovery path; Android automatic backup is disabled.
+
+API clients use fixed HTTPS origins, bounded responses, application-status validation and full pagination. UEX's optional bearer token is attached only to the UEX host and held in memory. Catalog sync is staged before committing; timestamps identify independently synced modules. Requests timeout after 20 seconds. Android's explicit Cancel button cancels the active full-module sync; leaving the activity cancels all lifetime requests.
+
+The read-only bundled image index maps game UUIDs and namespaced UEX commodity IDs to validated APK asset paths. Assets are decoded directly from the package, without a second full on-disk copy. The source retains the original uploaded image bytes, an index and SHA-256 checksums. Missing bundled matches fall back to the image cache, which stores a SHA-256 URL key, downloads only HTTPS image responses, limits each file to 5 MB and the cache to 100 MB. Decoding downsamples images to at most roughly 900 pixels per dimension. Clearing the download cache leaves APK assets untouched.
+
+Vehicle compatibility uses the API's compatible type list and per-type subtype restrictions, editable flag, min/max size, required tags in both directions and exact data patch. Nulls are never interpreted as unrestricted. Unknown restrictions are review-only. Nested port IDs include the full parent path so two identical hardpoint names cannot overwrite each other. Replacing a parent removes planned child replacements; planning stock children under a replaced parent is blocked.
+
+Backups have a `juvis-android` envelope and schema version 1, 8 MB input cap and quantity validation. Import shows a summary, saves `before-import.json` in internal files, then merges. Imported values win on duplicate keys; unrelated current entries remain. Before-import data can also be recovered with `adb exec-out run-as app.juvis.scarmory cat files/before-import.json` on this debuggable package. Do not use development signing for public release.
+
+The Android file picker grants access only to user-selected documents, requiring no broad storage permission. Gemini integration copies a narrowly scoped research prompt and opens its public app URL. The app does not claim an undocumented prompt-prefill deep link or send a chat message automatically.
+
+Next integration work should start from the actual RC17A source and an anonymized exported Windows backup. Map its IDs and enum values explicitly, then add migration fixtures before exposing import. A shared core library can then replace duplicate Windows and Android logic without forcing either UI to change.
