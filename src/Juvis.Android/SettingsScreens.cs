@@ -17,7 +17,7 @@ public partial class MainActivity
         body.AddView(Button("Commodities", () => { Navigate("Commodities"); return Task.CompletedTask; }));
         body.AddView(Button("Blueprint library", () => { Navigate("Blueprints"); return Task.CompletedTask; }));
         var card = Card(); card.AddView(Label("Sync sources", 21));
-        card.AddView(Label("The bundled starter data is a partial snapshot from 11 September 2026. Sync all sources for broader coverage. Images load when viewed; detailed Wiki records and vehicle loadouts refresh on their pages. Failed or cancelled syncs keep the previous cache.", 13, muted));
+        card.AddView(Label("The bundled starter data includes a weapon and ammunition snapshot refreshed on 15 September 2026. Sync all sources for broader coverage. Images load when viewed; detailed Wiki records and vehicle loadouts refresh on their pages. Failed or cancelled syncs keep the previous cache.", 13, muted));
         var syncAll = Button("Sync all sources", RunSyncAll, true);
         syncAll.Enabled = !busy; card.AddView(syncAll);
         if (syncSummary.Length > 0) card.AddView(Label(syncSummary, 13, muted));
@@ -41,7 +41,7 @@ public partial class MainActivity
         body.AddView(Label($"{bundledImages.Count:N0} bundled images · always available offline", 16));
         body.AddView(Label($"Downloaded image cache · {images.Bytes / 1048576.0:0.0} MB / 100 MB", 16));
         body.AddView(Button("Clear downloaded images", async () => { await images.Clear(); Draw(); }));
-        body.AddView(Label("JUVIS Android 0.1.6 · Native C#\nCommunity data: UEX and Star Citizen Wiki. Unofficial fan companion; not affiliated with Cloud Imperium Games.\nDesktop backup migration awaits the Windows source/schema.", 12, muted));
+        body.AddView(Label("JUVIS Android 0.1.7 · Native C#\nCommunity data: UEX and Star Citizen Wiki. Unofficial fan companion; not affiliated with Cloud Imperium Games.\nDesktop backup migration awaits the Windows source/schema.", 12, muted));
         body.AddView(Button("UEX data source", () => { OpenUrl("https://uexcorp.space/"); return Task.CompletedTask; }));
         body.AddView(Button("Star Citizen Wiki data source", () => { OpenUrl("https://api.star-citizen.wiki/"); return Task.CompletedTask; }));
     }

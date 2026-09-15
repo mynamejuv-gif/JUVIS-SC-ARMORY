@@ -24,13 +24,13 @@ public static class StarterGuide
         foreach (var item in root.Get("items").Array())
         {
             var key = item.S("blueprint");
-            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(item.S("name")) || !keys.Add(key) ||
+            if (string.IsNullOrWhiteSpace(key) || !CatalogPresentation.HasName(item.S("name")) || !keys.Add(key) ||
                 item.Get("missions").ValueKind != JsonValueKind.Array)
                 throw new InvalidDataException("Citizen Starter Guide returned incomplete or conflicting records. Previous guide data retained.");
             var missions = new List<GuideMission>();
             foreach (var m in item.Get("missions").Array())
             {
-                if (string.IsNullOrWhiteSpace(m.S("title"))) throw new InvalidDataException("Guide mission title missing; previous guide data retained.");
+                if (!CatalogPresentation.HasName(m.S("title"))) throw new InvalidDataException("Guide mission title is not displayable; previous guide data retained.");
                 missions.Add(new(m.S("title"), m.S("type"), m.S("faction"),
                     ApiParser.First(string.Join(", ", m.Get("systems").Strings().Distinct()), m.S("system")),
                     m.S("repStanding"), m.Get("minRep").Number(), m.Get("lawful").Bool(), m.S("event")));

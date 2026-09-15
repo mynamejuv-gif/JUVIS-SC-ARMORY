@@ -67,6 +67,19 @@ public sealed class Armory(LocalStore store, ApiClient api)
                 if (commodities.Count == 0) throw new InvalidDataException("No commodities returned.");
                 await Cache(c => c.Commodities = commodities, source);
                 break;
+            case "Wiki weapons & ammunition":
+                var personalWeapons = await api.WikiPages("items?filter[type]=WeaponPersonal", ApiParser.WikiItem, progress, ct);
+                var vehicleWeapons = await api.WikiPages("items?filter[type]=WeaponGun", ApiParser.WikiItem, progress, ct);
+                var magazines = await api.WikiPages("items?filter[type]=WeaponAttachment&filter[sub_type]=Magazine", ApiParser.WikiItem, progress, ct);
+                var weaponData = personalWeapons.Concat(vehicleWeapons).Concat(magazines).Where(i => i.Id.Length > 0).ToList();
+                if (personalWeapons.Count == 0 || vehicleWeapons.Count == 0 || magazines.Count == 0)
+                    throw new InvalidDataException("Wiki returned an incomplete weapon or magazine catalog.");
+                await Cache(c => {
+                    var map = c.Items.ToDictionary(i => i.Id);
+                    foreach (var i in weaponData) map[i.Id] = i;
+                    c.Items = map.Values.ToList();
+                }, source);
+                break;
             case "Vehicles":
                 var vehicles = (await api.Get(ApiClient.Uex + "vehicles", ct)).Get("data").Array().Select(ApiParser.UexVehicle).ToList();
                 if (vehicles.Count == 0) throw new InvalidDataException("No vehicles returned.");

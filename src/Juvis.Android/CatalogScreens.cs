@@ -22,48 +22,81 @@ public partial class MainActivity
             {
                 // Keep imported states visible even when their catalog has not been synced yet.
                 var known = all.Select(i => i.Id).ToHashSet();
-                all = all.Concat(armory.State.Gear.Where(x => !known.Contains(x.Key)).Select(x => new Item { Id = x.Key, Name = x.Value.Name.Length > 0 ? x.Value.Name : x.Key, Category = "Awaiting catalog sync" }));
+                all = all.Concat(armory.State.Gear.Where(x => !known.Contains(x.Key)).Select(x => new Item { Id = x.Key, Name = x.Value.Name, Category = "Awaiting catalog sync" }));
                 all = all.Where(i => armory.State.Gear.TryGetValue(i.Id, out var s) && (gearFilter switch { "Owned" => s.Owned, "Need" => s.Need, "Favorites" => s.Favorite, _ => s.Owned || s.Need || s.Favorite }));
             }
             else if (category != "All categories") all = all.Where(i => CatalogPresentation.Category(i.Category) == category);
-            var filtered = all.Where(i => Matches(query, i.Name, i.Category, CatalogPresentation.Category(i.Category), i.Manufacturer)).OrderBy(i => i.Name).ToList();
+            all = all.Where(i => CatalogPresentation.ItemName(i) != null && WeaponPresentation.MatchesFilter(i, armory.Catalog.Items, ammoFilter));
+            var filtered = all.Where(i => Matches(query, CatalogPresentation.ItemName(i)!, i.Category, CatalogPresentation.Category(i.Category), i.Manufacturer,
+                WeaponPresentation.IsWeapon(i) ? WeaponPresentation.Ammunition(i, armory.Catalog.Items).SearchText : ""))
+                .OrderBy(i => CatalogPresentation.ItemName(i)).ToList();
             Pager(results, filtered, i => {
+                var name = CatalogPresentation.ItemName(i)!;
                 var card = Card();
                 card.AddView(Label(CatalogPresentation.Category(i.Category).ToUpperInvariant(), 10, cyan));
-                card.AddView(Label(i.Name, 19));
-                card.AddView(Label(ApiParser.First(i.Manufacturer, "Manufacturer unavailable") + (i.Size != null ? $" · S{i.Size}" : ""), 12, muted));
+                card.AddView(Label(name, 19));
+                card.AddView(Label((CatalogPresentation.Name(i.Manufacturer) ?? "Manufacturer unavailable") + (i.Size != null ? $" · S{i.Size}" : ""), 12, muted));
+                if (WeaponPresentation.IsWeapon(i))
+                {
+                    var ammo = WeaponPresentation.Ammunition(i, armory.Catalog.Items);
+                    card.AddView(Label(ammo.NotApplicable ? "Ammunition not applicable" : ammo.HasData ? string.Join(" · ", new[] { ammo.AmmoType, ammo.Caliber, ammo.Capacity is > 0 ? $"{ammo.Capacity} rounds" : "" }.Where(CatalogPresentation.HasName)) : "Ammo data unavailable", 12, cyan));
+                }
                 if (armory.State.Gear.TryGetValue(i.Id, out var s)) card.AddView(Label(string.Join("  ·  ", new[] { s.Owned ? "✓ Owned" : "", s.Need ? "+ Need" : "", s.Favorite ? "★ Favorite" : "" }.Where(x => x.Length > 0)), 12, cyan));
                 card.AddView(Button("Details & gear states  ›", () => { ItemScreen(i, Draw); return Task.CompletedTask; }));
                 results.AddView(card);
             }, Render);
         }
-        Search("Search names, categories, manufacturers", _ => Render());
+        Search("Search name, caliber, ammo type or magazine", _ => Render());
         if (gear) Choice(body, ["All saved", "Owned", "Need", "Favorites"], gearFilter, c => { gearFilter = c; page = 0; Render(); });
-        else Choice(body, new[] { "All categories" }.Concat(armory.Catalog.Items.Select(i => CatalogPresentation.Category(i.Category)).Distinct().Order()).ToArray(), category, c => { category = c; page = 0; Render(); });
+        else Choice(body, new[] { "All categories" }.Concat(armory.Catalog.Items.Where(i => CatalogPresentation.ItemName(i) != null).Select(i => CatalogPresentation.Category(i.Category)).Distinct().Order()).ToArray(), category, c => { category = c; page = 0; Render(); });
+        Choice(body, ["All ammunition", "Ballistic", "Energy", "Magazine-fed", "Ammo data unavailable"], ammoFilter, c => { ammoFilter = c; page = 0; Render(); });
         body.AddView(results); Render();
     }
     void ItemScreen(Item i, Action returnTo)
     {
-        Detail(i.Name, $"{i.Category} · {i.Source}\nPatch: {ApiParser.First(i.Version, "unknown")}", returnTo);
+        var itemName = CatalogPresentation.ItemName(i);
+        if (itemName == null) { returnTo(); return; }
+        Detail(itemName, $"{i.Category} · {i.Source}\nPatch: {ApiParser.First(i.Version, "unknown")}", returnTo);
         var generation = screenGeneration;
         var bundledAsset = bundledImages.AssetFor(i.Id);
         if (bundledAsset != null || i.ImageUrl.Length > 0)
         {
             var picture = new ImageView(this); picture.SetScaleType(ImageView.ScaleType.FitCenter);
-            picture.ContentDescription = i.Name;
+            picture.ContentDescription = itemName;
             body.AddView(picture, new LinearLayout.LayoutParams(-1, Dp(190)));
             var caption = Label("Loading image…", 11, muted); body.AddView(caption);
             _ = LoadPicture(picture, caption, i.ImageUrl, bundledAsset);
         }
         else body.AddView(Label("Image unavailable · refresh Wiki details to check", 12, muted));
         var card = Card();
-        card.AddView(Label($"{i.Manufacturer}   /   Size {i.Size?.ToString() ?? "?"}   /   {i.Grade} {i.Class}", 14));
+        card.AddView(Label($"{CatalogPresentation.Name(i.Manufacturer) ?? "Manufacturer unavailable"}   /   Size {i.Size?.ToString() ?? "?"}   /   {i.Grade} {i.Class}", 14));
         card.AddView(Label(ApiParser.First(i.Description, "Refresh Wiki details for specifications."), 14, muted));
         foreach (var (key, value) in i.Stats) card.AddView(Label(key + ": " + value, 14));
         card.AddView(Label("Reported buy price: " + Price(i.BuyPrice), 15, cyan));
         foreach (var shop in i.Shops) card.AddView(Label(shop, 12, muted));
         body.AddView(card);
-        AddCommunitySource(i.Name, "", () => ItemScreen(i, returnTo));
+        if (WeaponPresentation.IsWeapon(i))
+        {
+            var ammo = WeaponPresentation.Ammunition(i, armory.Catalog.Items);
+            var ammunition = Card(); ammunition.AddView(Label("AMMUNITION", 12, cyan));
+            if (ammo.NotApplicable) ammunition.AddView(Label("Ammunition not applicable to this item", 15, muted));
+            else if (!ammo.HasData) ammunition.AddView(Label("Ammo data unavailable", 15, muted));
+            else
+            {
+                if (CatalogPresentation.HasName(ammo.Caliber)) ammunition.AddView(Label("Caliber: " + ammo.Caliber, 14));
+                if (CatalogPresentation.HasName(ammo.AmmoType)) ammunition.AddView(Label("Ammo type: " + ammo.AmmoType, 14));
+                if (CatalogPresentation.HasName(ammo.MagazineType)) ammunition.AddView(Label("Magazine type: " + ammo.MagazineType, 14));
+                if (CatalogPresentation.HasName(ammo.MagazineName)) ammunition.AddView(Label("Magazine: " + ammo.MagazineName, 14));
+                if (ammo.Capacity is > 0) ammunition.AddView(Label("Capacity: " + ammo.Capacity + " rounds", 14));
+                if (ammo.CompatibleMagazines.Count > 0) ammunition.AddView(Label("Compatible magazines: " + string.Join(", ", ammo.CompatibleMagazines), 14));
+                if (ammo.CompatibleAmmunition.Count > 0) ammunition.AddView(Label("Compatible ammunition: " + string.Join(", ", ammo.CompatibleAmmunition), 14));
+                if (CatalogPresentation.HasName(ammo.EnergySource)) ammunition.AddView(Label("Energy source: " + ammo.EnergySource, 14));
+                if (ammo.EnergyCapacity is > 0) ammunition.AddView(Label("Energy capacity: " + ammo.EnergyCapacity + " shots", 14));
+                if (ammo.EnergyRegenerationPerSecond is > 0) ammunition.AddView(Label($"Energy regeneration: {ammo.EnergyRegenerationPerSecond:0.##} shots/s", 14));
+            }
+            body.AddView(ammunition);
+        }
+        AddCommunitySource(itemName, "", () => ItemScreen(i, returnTo));
         var state = armory.State.Gear.GetValueOrDefault(i.Id) ?? new();
         foreach (var flag in new[] { "Owned", "Need", "Favorite" })
         {
@@ -71,13 +104,13 @@ public partial class MainActivity
             check.SetTextColor(ink); check.SetMinHeight(Dp(48));
             check.CheckedChange += async (_, e) => {
                 check.Enabled = false;
-                try { await armory.Change(s => { var old = s.Gear.GetValueOrDefault(i.Id) ?? new(); s.Gear[i.Id] = flag switch { "Owned" => old with { Owned = e.IsChecked, Name = i.Name }, "Need" => old with { Need = e.IsChecked, Name = i.Name }, _ => old with { Favorite = e.IsChecked, Name = i.Name } }; }); }
+                try { await armory.Change(s => { var old = s.Gear.GetValueOrDefault(i.Id) ?? new(); s.Gear[i.Id] = flag switch { "Owned" => old with { Owned = e.IsChecked, Name = itemName }, "Need" => old with { Need = e.IsChecked, Name = itemName }, _ => old with { Favorite = e.IsChecked, Name = itemName } }; }); }
                 catch (Exception ex) { Error(ex); ItemScreen(i, returnTo); }
                 finally { check.Enabled = true; }
             };
             body.AddView(check);
         }
-        body.AddView(Button("✦ Ask Gemini about this item", () => AskGemini(GeminiPrompt.Item(i)), true));
+        body.AddView(Button("✦ Ask Gemini about this item", () => AskGemini(GeminiPrompt.Item(i with { Name = itemName })), true));
         body.AddView(Button("Refresh Wiki details", async () => {
             var refreshed = await armory.Api.LoadItem(i, lifetime.Token);
             if (refreshed.Id.Length == 0) throw new InvalidDataException("Wiki did not return a matching item.");
@@ -126,18 +159,19 @@ public partial class MainActivity
     {
         Title("Commodities", "UEX reference prices per SCU · community reports, not live quotes.");
         var results = new LinearLayout(this) { Orientation = Orientation.Vertical };
-        void Render() => Pager(results, armory.Catalog.Commodities.Where(c => Matches(query, c.Name, c.Code)).OrderBy(c => c.Name).ToList(), c => {
-            var card = Card(); card.AddView(Label(c.Name, 20)); card.AddView(Label(c.Code + (c.Illegal ? " · Illegal commodity" : ""), 12, cyan));
+        void Render() => Pager(results, armory.Catalog.Commodities.Where(c => CatalogPresentation.CommodityName(c) != null && Matches(query, CatalogPresentation.CommodityName(c)!, c.Code)).OrderBy(c => CatalogPresentation.CommodityName(c)).ToList(), c => {
+            var name = CatalogPresentation.CommodityName(c)!;
+            var card = Card(); card.AddView(Label(name, 20)); card.AddView(Label(c.Code + (c.Illegal ? " · Illegal commodity" : ""), 12, cyan));
             var asset = bundledImages.AssetFor(ApiParser.First(c.ImageKey, c.Id));
             if (asset != null)
             {
-                var picture = new ImageView(this); picture.SetScaleType(ImageView.ScaleType.FitCenter); picture.ContentDescription = c.Name;
+                var picture = new ImageView(this); picture.SetScaleType(ImageView.ScaleType.FitCenter); picture.ContentDescription = name;
                 card.AddView(picture, new LinearLayout.LayoutParams(-1, Dp(100)));
                 var caption = Label("Loading bundled image…", 11, muted); card.AddView(caption);
                 _ = LoadPicture(picture, caption, "", asset);
             }
             card.AddView(Label($"Buy {Price(c.Buy)}    /    Sell {Price(c.Sell)}", 15));
-            card.AddView(Button("✦ Ask Gemini", () => AskGemini($"Research {c.Name} trading in Star Citizen. Verify current patch, legality by jurisdiction, buy/sell locations and prices per SCU. Cite sources; cached UEX prices may be stale.")));
+            card.AddView(Button("✦ Ask Gemini", () => AskGemini($"Research {name} trading in Star Citizen. Verify current patch, legality by jurisdiction, buy/sell locations and prices per SCU. Cite sources; cached UEX prices may be stale.")));
             results.AddView(card);
         }, Render);
         Search("Search commodities", _ => Render()); body.AddView(results); Render();

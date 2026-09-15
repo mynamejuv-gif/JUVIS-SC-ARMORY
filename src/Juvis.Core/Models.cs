@@ -16,15 +16,40 @@ public record Item
     public string WebUrl { get; init; } = "";
     public string Version { get; init; } = "";
     public string Source { get; init; } = "";
+    public string Model { get; init; } = "";
+    public string[] AlternativeNames { get; init; } = [];
     public string[] Tags { get; init; } = [];
     public string[] RequiredTags { get; init; } = [];
     public bool RestrictionsKnown { get; init; }
     public decimal? BuyPrice { get; init; }
     public List<string> Shops { get; init; } = [];
     public Dictionary<string, string> Stats { get; init; } = [];
+    public AmmunitionInfo Ammunition { get; init; } = new();
     public override string ToString() => Name;
 }
-public record Commodity(string Id, string Name, string Code, decimal? Buy, decimal? Sell, bool Illegal, string ImageKey = "");
+public record AmmunitionInfo
+{
+    public bool NotApplicable { get; init; }
+    public string Caliber { get; init; } = "";
+    public string AmmoType { get; init; } = "";
+    public string MagazineType { get; init; } = "";
+    public string MagazineName { get; init; } = "";
+    public int? Capacity { get; init; }
+    public string[] CompatibleMagazineIds { get; init; } = [];
+    public string[] CompatibleMagazineNames { get; init; } = [];
+    public string[] CompatibleAmmunitionNames { get; init; } = [];
+    public string EnergySource { get; init; } = "";
+    public int? EnergyCapacity { get; init; }
+    public decimal? EnergyRegenerationPerSecond { get; init; }
+    public int? MagazineMinSize { get; init; }
+    public int? MagazineMaxSize { get; init; }
+    public string[] MagazinePortRequiredTags { get; init; } = [];
+    public string[] MagazinePortTags { get; init; } = [];
+}
+public record Commodity(string Id, string Name, string Code, decimal? Buy, decimal? Sell, bool Illegal, string ImageKey = "")
+{
+    public string[] AlternativeNames { get; init; } = [];
+}
 public record Ingredient(string Id, string Name, decimal Quantity, string Unit);
 public record Blueprint(string Id, string Name, string Version, decimal Seconds, bool DefaultUnlocked,
     List<Ingredient> Ingredients, List<string> Missions, string WebUrl)
@@ -34,9 +59,14 @@ public record Blueprint(string Id, string Name, string Version, decimal Seconds,
 }
 public record PortType(string Type, string[] SubTypes);
 public record Port(string Id, string Name, bool? Editable, int? MinSize, int? MaxSize,
-    List<PortType> Types, string[] RequiredTags, string[] Tags, Item? Installed, string Version);
+    List<PortType> Types, string[] RequiredTags, string[] Tags, Item? Installed, string Version)
+{
+    public string DisplayName { get; init; } = "";
+}
 public record Vehicle(string Id, string Name, string Manufacturer, bool Ground, string ImageUrl, string Version, List<Port> Ports)
 {
+    public string Model { get; init; } = "";
+    public string[] AlternativeNames { get; init; } = [];
     public override string ToString() => Name;
 }
 public record GearState(bool Owned = false, bool Need = false, bool Favorite = false, string Name = "");

@@ -8,7 +8,7 @@ A native Android companion for Star Citizen, written in C# with .NET for Android
 
 This is a starter implementation of the described Windows workflows. The original Windows source was unavailable, so complete desktop feature parity has not been established.
 
-Public prerelease: [Download v0.1.6](https://github.com/mynamejuv-gif/JUVIS-SC-ARMORY/releases/tag/v0.1.6) — includes Sync all sources and community blueprint reports.
+Public prerelease: [Download v0.1.6](https://github.com/mynamejuv-gif/JUVIS-SC-ARMORY/releases/tag/v0.1.6). The local 0.1.7 source and packages add ammunition data and global name-quality handling; they are not automatically published.
 
 Validation: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tested coverage, fixes and remaining data gaps.
 
@@ -18,6 +18,8 @@ Validation: see the [0.1.3 category audit](docs/CATEGORY-AUDIT-0.1.3.md) for tes
 - Citizen Starter Guide mission reports, optional sync and offline viewing with separate source attribution.
 
 - Searchable item catalog, item images and downloaded-image cache.
+- Weapon ammunition details plus caliber, ammo-type, magazine, ballistic and energy search/filter support.
+- Central display-name validation across catalogs, gear, crafting, vehicles and loadouts.
 - Commodities, blueprints and crafting hub.
 - My Gear states and backup import/export.
 - Vehicle loadouts and proposed upgrades.
@@ -76,12 +78,12 @@ Follow [the upload guide](docs/GITHUB-SETUP.md). The included GitHub Actions wor
 | --- | --- |
 | `src/Juvis.Core` | Models, parsers, storage, synchronization and planning |
 | `src/Juvis.Android` | Native Android screens and resources |
-| `tests` | 54 executable core tests and fixtures |
+| `tests` | 61 executable core tests and fixtures |
 | `tools/Juvis.ImagePack` | Local image-pack importer |
 | `BundledData` | Empty default image index |
 | `docs` | Architecture, verification, device checklist and screenshots |
 
-The full-image edition was tested on an Android 16 emulator. Historical full-image verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that separate package. The v0.1.6 GitHub Actions build passed with 54 core tests. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
+The previous full-image edition was tested on an Android 16 emulator. Historical verification is recorded in [VERIFICATION.md](docs/VERIFICATION.md); [FULL-IMAGE-EDITION.md](docs/FULL-IMAGE-EDITION.md) describes that package, while [RELEASE-0.1.7.md](docs/RELEASE-0.1.7.md) records the current build and its untested device limits. Vehicle recommendations depend on available API data and are not a ship-performance simulator.
 
 This is an unofficial fan companion. Star Citizen content and images belong to their respective owners. Data sources include UEX and Star Citizen Wiki. No third-party image ownership or license is granted by this repository.
 

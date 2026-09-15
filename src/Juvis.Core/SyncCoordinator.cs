@@ -6,7 +6,7 @@ public sealed record SyncReport(List<string> Updated, List<SyncFailure> Failed, 
 public static class SyncCoordinator
 {
     public static IReadOnlyList<string> Sources { get; } = Array.AsReadOnly(new[]
-        { "UEX items", "Commodities", "Blueprints", "Vehicles", "Wiki components", StarterGuide.Source });
+        { "UEX items", "Wiki weapons & ammunition", "Commodities", "Blueprints", "Vehicles", "Wiki components", StarterGuide.Source });
 
     public static async Task<SyncReport> Run(
         Func<string, IProgress<string>, CancellationToken, Task> sync,

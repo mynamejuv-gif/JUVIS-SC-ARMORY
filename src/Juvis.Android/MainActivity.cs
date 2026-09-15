@@ -28,7 +28,7 @@ public partial class MainActivity : Activity
     LinearLayout root = null!, body = null!, nav = null!;
     TextView status = null!;
     string module = "Catalog";
-    string query = "", category = "All categories", gearFilter = "All saved";
+    string query = "", category = "All categories", gearFilter = "All saved", ammoFilter = "All ammunition";
     int page;
     bool ready, busy;
     int screenGeneration;

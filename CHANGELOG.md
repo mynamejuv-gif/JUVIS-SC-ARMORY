@@ -1,5 +1,14 @@
 # Release history
 
+## 0.1.7 · 15 September 2026
+
+- Added centralized display-name validation and fallback resolution across catalog, gear, crafting, vehicles, stock loadouts, compatible upgrades and search. Unresolved records are hidden while saved IDs and backup data remain untouched.
+- Added structured ammunition data for personal and vehicle weapons: ammo class/type, caliber where the source states it, magazines, capacity, compatible magazines and energy-capacitor data.
+- Added ammunition-aware catalog search and Ballistic, Energy, Magazine-fed and unavailable-data filters.
+- Added a dedicated Wiki weapon/magazine sync that preserves prior cache data if any required source segment fails.
+- Refreshed the bundled starter snapshot to 1,211 cleanly named items, including 586 weapon-category entries. All 524 ammunition-applicable entries have reliable ammunition data; 62 melee, throwable, gadget or utility entries are marked not applicable.
+- Preserved schema-v1 backups, app ID `app.juvis.scarmory`, ARM64/x64 support and the existing strict slot/tag/patch compatibility rules. Version is now 0.1.7 (`versionCode` 8).
+
 ## 0.1.6
 
 - Replace six More-page sync buttons with one Sync all sources action.

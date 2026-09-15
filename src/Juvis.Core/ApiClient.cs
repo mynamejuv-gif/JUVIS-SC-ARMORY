@@ -29,7 +29,7 @@ public sealed class ApiClient(HttpClient http)
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(20));
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-        request.Headers.UserAgent.ParseAdd("JuvisAndroid/0.1 (+https://api.star-citizen.wiki)");
+        request.Headers.UserAgent.ParseAdd("JuvisAndroid/0.1.7 (+https://api.star-citizen.wiki)");
         if (uri.Host == "api.uexcorp.uk" && !string.IsNullOrWhiteSpace(UexToken)) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", UexToken);
         request.Headers.Add("X-Client-Version", "0.1.0");
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
@@ -102,12 +102,12 @@ public sealed class ApiClient(HttpClient http)
         var result = ApiParser.WikiVehicle(root.Get("data"));
         if (string.IsNullOrWhiteSpace(result.Id)) throw new InvalidDataException("Wiki returned no vehicle identity.");
         if (result.Ports.Count == 0) throw new InvalidDataException("No ports returned. Retry or check the Wiki record.");
-        return result with { Id = vehicle.Id };
+        return result with { Id = vehicle.Id, Ground = vehicle.Ground };
     }
     public async Task<Item> LoadItem(Item item, CancellationToken ct)
     {
         var key = item.Id.StartsWith("uex:") ? item.Name : item.Id;
-        var result = ApiParser.WikiItem((await Get(Wiki + "items/" + Uri.EscapeDataString(key), ct)).Get("data"));
+        var result = ApiParser.WikiItem((await Get(Wiki + "items/" + Uri.EscapeDataString(key) + "?include=ports", ct)).Get("data"));
         if (string.IsNullOrWhiteSpace(result.Id)) throw new InvalidDataException("Wiki returned no item identity.");
         return result with { Id = item.Id };
     }

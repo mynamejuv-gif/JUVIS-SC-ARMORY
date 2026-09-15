@@ -2,6 +2,34 @@ using System.Net;
 using System.Text.Json;
 using Juvis.Core;
 
+if (args.Length == 4 && args[0] == "--enrich-weapons")
+{
+    var catalog = JsonSerializer.Deserialize<Catalog>(File.ReadAllText(args[1]), LocalStore.Json) ?? throw new InvalidDataException("Starter catalog is empty.");
+    var enrichStore = new LocalStore(args[2]);
+    using var enrichClient = new HttpClient();
+    var enrichApp = new Armory(enrichStore, new ApiClient(enrichClient));
+    await enrichApp.Initialize(() => Task.FromResult(catalog));
+    await enrichApp.Sync("Wiki weapons & ammunition", new Progress<string>(Console.WriteLine), default);
+    catalog = enrichApp.Catalog;
+    catalog.Items = catalog.Items.Where(i => CatalogPresentation.ItemName(i) != null)
+        .Select(i => i with { Name = CatalogPresentation.ItemName(i)!, Manufacturer = CatalogPresentation.Name(i.Manufacturer) ?? "" }).ToList();
+    catalog.Commodities = catalog.Commodities.Where(c => CatalogPresentation.CommodityName(c) != null)
+        .Select(c => c with { Name = CatalogPresentation.CommodityName(c)! }).ToList();
+    catalog.Blueprints = catalog.Blueprints.Where(b => CatalogPresentation.BlueprintName(b) != null)
+        .Select(b => b with { Name = CatalogPresentation.BlueprintName(b)!, Ingredients = b.Ingredients.Where(i => CatalogPresentation.HasName(i.Name)).ToList(), Missions = b.Missions.Where(CatalogPresentation.HasName).ToList() }).ToList();
+    catalog.Vehicles = catalog.Vehicles.Where(v => CatalogPresentation.VehicleName(v) != null).Select(v => v with {
+        Name = CatalogPresentation.VehicleName(v)!, Manufacturer = CatalogPresentation.Name(v.Manufacturer) ?? "",
+        Ports = v.Ports.Select(p => p.Installed != null && CatalogPresentation.ItemName(p.Installed) == null ? p with { Installed = null } : p).ToList()
+    }).ToList();
+    File.WriteAllText(args[3], JsonSerializer.Serialize(catalog, LocalStore.Json));
+    var weapons = catalog.Items.Where(WeaponPresentation.IsWeapon).OrderBy(i => CatalogPresentation.ItemName(i)).ToList();
+    var applicable = weapons.Where(i => !WeaponPresentation.Ammunition(i, catalog.Items).NotApplicable).ToList();
+    var unknown = applicable.Where(i => !WeaponPresentation.Ammunition(i, catalog.Items).HasData).ToList();
+    Console.WriteLine($"WEAPON AUDIT: {weapons.Count} displayable weapon-category items; {applicable.Count} ammunition-applicable; {applicable.Count - unknown.Count} with ammunition data; {unknown.Count} unavailable.");
+    foreach (var weapon in unknown) Console.WriteLine("AMMO UNAVAILABLE: " + CatalogPresentation.ItemName(weapon));
+    return;
+}
+
 if (args.Length == 2 && args[0] == "--guide-live")
 {
     using var client = new HttpClient();
@@ -19,7 +47,7 @@ if (args.Length == 2 && args[0] == "--live")
     using var client = new HttpClient();
     var app = new Armory(new LocalStore(args[1]), new ApiClient(client));
     await app.Initialize(() => Task.FromResult(new Catalog()));
-    foreach (var source in new[] { "Commodities", "Vehicles", "Blueprints", "Wiki components", "UEX items" })
+    foreach (var source in new[] { "Commodities", "Vehicles", "Blueprints", "Wiki components", "UEX items", "Wiki weapons & ammunition" })
     {
         if (app.Catalog.Synced.ContainsKey(source)) { Console.WriteLine("Already verified " + source); continue; }
         await app.Sync(source, new Progress<string>(Console.WriteLine), default);
@@ -144,14 +172,58 @@ Test("Blueprint nested output supplies a missing or placeholder name", () => {
         Check(ApiParser.WikiBlueprint(d.RootElement).Name == "Omnisky III Cannon");
     }
 });
-Test("Legacy incomplete blueprints remain identifiable without changing saved IDs", () => {
+Test("Incomplete blueprints are hidden without changing saved IDs", () => {
     foreach (var name in new[] { "", " \t", "<= PLACEHOLDER =>" }) {
         var b = new Blueprint("recipe-id", name, "", 10, false, [], [], "");
         Check(!CatalogPresentation.HasName(b.Name));
-        Check(CatalogPresentation.BlueprintName(b) == "Incomplete blueprint · recipe-i");
+        Check(CatalogPresentation.BlueprintName(b) == null);
         Check(b.Id == "recipe-id" && b.Name == name);
     }
     Check(CatalogPresentation.HasName("Placeholder Rifle") && CatalogPresentation.HasName("Omnisky III Cannon"));
+});
+var starterCatalog = JsonSerializer.Deserialize<Catalog>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "starter.json")), LocalStore.Json)!;
+Test("Bundled catalog has only displayable record names", () => {
+    Check(starterCatalog.Items.All(i => CatalogPresentation.ItemName(i) != null));
+    Check(starterCatalog.Commodities.All(c => CatalogPresentation.CommodityName(c) != null));
+    Check(starterCatalog.Blueprints.All(b => CatalogPresentation.BlueprintName(b) != null));
+    Check(starterCatalog.Vehicles.All(v => CatalogPresentation.VehicleName(v) != null));
+    Check(starterCatalog.Vehicles.SelectMany(v => v.Ports).Where(p => p.Installed != null).All(p => CatalogPresentation.ItemName(p.Installed!) != null));
+});
+Test("Bundled weapon ammunition coverage is complete for applicable records", () => {
+    var weapons = starterCatalog.Items.Where(WeaponPresentation.IsWeapon).ToList();
+    var applicable = weapons.Select(i => WeaponPresentation.Ammunition(i, starterCatalog.Items)).Where(a => !a.NotApplicable).ToList();
+    Check(weapons.Count == 586 && applicable.Count == 524 && applicable.All(a => a.HasData));
+});
+Test("Bundled vehicle retains a confirmed slot-compatible upgrade", () => {
+    var vehicle = starterCatalog.Vehicles.Single();
+    var kozane = starterCatalog.Items.Single(i => CatalogPresentation.ItemName(i) == "6MA 'Kozane'");
+    var shield = vehicle.Ports.First(p => p.Editable == true && p.Types.Any(t => t.Type == "Shield"));
+    Check(Compatibility.Check(shield, kozane).Fit == Fit.Direct);
+    Check(!CatalogPresentation.PortName(shield).Contains("hardpoint", StringComparison.OrdinalIgnoreCase));
+});
+Test("Name resolver rejects internal values and uses trustworthy alternatives", () => {
+    foreach (var bad in new[] { "PLACEHOLDER", "<= PLACEHOLDER =>", "< UNINITIALIZED >", "hardpoint_left_weapon", "01234567-89ab-cdef-0123-456789abcdef", "item_weapon_debug" })
+        Check(!CatalogPresentation.HasName(bad), bad);
+    var named = new Item { Name = "<= PLACEHOLDER =>", AlternativeNames = ["P4-AR Rifle"] };
+    var modeled = new Item { Name = "", Manufacturer = "Behring", Model = "FS-9" };
+    Check(CatalogPresentation.ItemName(named) == "P4-AR Rifle" && CatalogPresentation.ItemName(modeled) == "Behring FS-9");
+});
+Test("Hidden names do not remove persistent state from backups", () => {
+    var hidden = new UserState { Gear = new() { ["stable-id"] = new(true, false, false, "<= PLACEHOLDER =>") } };
+    Check(Backup.Parse(Backup.Export(hidden)).Gear["stable-id"].Owned);
+});
+Test("Weapon ammunition parser uses structured fields and magazine relationships", () => {
+    using var d = JsonDocument.Parse("""{"uuid":"weapon","name":"P4-AR Rifle","type":"WeaponPersonal","personal_weapon":{"class":"Ballistic","magazine_size":40},"ammunition":{"capacity":40},"ports":[{"name":"magazine_attach","display_name":"Magazine","sizes":{"min":1,"max":1},"compatible_types":[{"type":"WeaponAttachment","sub_types":["Magazine"]}],"required_tags":["p4_mag"],"port_tags":["p4_mag"],"equipped_item_uuid":"mag","equipped_item":{"uuid":"mag","name":"P4-AR Magazine (40 cap)"}}],"description_data":[{"name":"Caliber","value":"5.56 mm"}]}""");
+    var weapon = ApiParser.WikiItem(d.RootElement);
+    var magazine = new Item { Id = "mag", Name = "P4-AR Magazine (40 cap)", Type = "WeaponAttachment", SubType = "Magazine", Size = 1, Tags = ["p4_mag"], RestrictionsKnown = true, Ammunition = new() { Caliber = "5.56 mm", Capacity = 40 } };
+    var ammo = WeaponPresentation.Ammunition(weapon, [weapon, magazine]);
+    Check(ammo.AmmoType == "Ballistic" && ammo.Caliber == "5.56 mm" && ammo.Capacity == 40 && ammo.CompatibleMagazines.SequenceEqual(new[] { "P4-AR Magazine (40 cap)" }));
+    Check(ammo.SearchText.Contains("5.56 mm") && !ammo.SearchText.Contains("stable-id"));
+});
+Test("Energy weapon ammunition reports capacitor data separately", () => {
+    using var d = JsonDocument.Parse("""{"uuid":"laser","name":"Laser Repeater","type":"WeaponGun","vehicle_weapon":{"type":"Laser Repeater","capacitor":{"max_ammo_load":75,"regen_per_second":15}},"ammunition":{"capacity":0,"impact_damage":[{"name":"Energy","damage":42}]}}""");
+    var ammo = ApiParser.WikiItem(d.RootElement).Ammunition;
+    Check(ammo.AmmoType == "Energy" && ammo.EnergyCapacity == 75 && ammo.EnergyRegenerationPerSecond == 15 && ammo.Capacity == null);
 });
 Test("Category aliases unite component categories without changing source records", () => {
     Check(CatalogPresentation.Category("Cooler") == CatalogPresentation.Category("Coolers"));
@@ -250,7 +322,7 @@ Test("Sync all continues after failures and runs every source once", () => {
         if (source == "Vehicles") throw new TaskCanceledException("Timeout");
         return Task.CompletedTask;
     }, new Progress<string>(), default).GetAwaiter().GetResult();
-    Check(seen.SequenceEqual(SyncCoordinator.Sources) && report.Updated.Count == 4 && report.Failed.Count == 2 && !report.Cancelled);
+    Check(seen.SequenceEqual(SyncCoordinator.Sources) && report.Updated.Count == SyncCoordinator.Sources.Count - 2 && report.Failed.Count == 2 && !report.Cancelled);
 });
 Test("Sync all cancellation retains completed results and skips remaining sources", () => {
     using var cancel = new CancellationTokenSource();

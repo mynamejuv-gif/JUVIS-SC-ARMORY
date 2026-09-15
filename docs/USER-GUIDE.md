@@ -35,9 +35,9 @@ Use **‹ Back** to return from a detail page. Long lists have **Next page** and
 *Catalog: search at the top, choose a category, then open Details & gear states.*
 
 1. Tap **Catalog**.
-2. Search by name, category or manufacturer. Use the category selector to narrow the list.
+2. Search by name, category, manufacturer, caliber, ammunition type or compatible magazine. Use the category and ammunition selectors to narrow the list.
 3. Tap **Details & gear states** on an item.
-4. Review its image, patch, specifications, reported price and any available shop information.
+4. Review its image, patch, specifications, ammunition section, reported price and any available shop information. Ballistic and energy weapons show only source-backed fields; non-ammunition items are marked not applicable.
 5. Tap **Refresh Wiki details** while online to request additional information.
 6. Use **Open source / availability** when that button is available to visit the item's source page.
 
@@ -100,7 +100,7 @@ Use **+ One more** to increase a recipe quantity. **− One / remove** decreases
 
 If a recipe has no quantities, refresh it before adding it. After importing a plan, sync Blueprints if a recipe is not cached. Totals use the cached base recipe; check the source for station, quality and tier requirements. Adding a plan does not craft anything in the game.
 
-Unnamed or placeholder recipes are hidden from the main blueprint list. Enable **Show incomplete source records** to inspect them. Their short IDs distinguish them, and saved plans remain available. Availability is not confirmed for incomplete records.
+Unnamed or placeholder recipes are hidden. Their stable IDs and any existing personal state remain in backups, and the app reports hidden saved-plan entries without exposing internal names.
 
 ![Incomplete recipes now have readable labels.](category-audit/blueprints-portrait.png)
 
